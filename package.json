@@ -1,0 +1,22 @@
+{
+  "name": "cache-manager-redis-store",
+  "author": "Matthijs Dabroek <dabroek@gmail.com>",
+  "description": "Redis store for node-cache-manager module",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dabroek/node-cache-manager-redis-store.git"
+  },
+  "scripts": {
+    "test": "node test.js",
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "redis": "^2.7.1"
+  },
+  "devDependencies": {
+    "rollup": "^0.41.6"
+  }
+}
