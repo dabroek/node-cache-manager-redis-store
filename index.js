@@ -50,9 +50,22 @@ const redisStore = (...args) => {
       redisCache.del(key, handleResponse(cb));
     },
     reset: cb => redisCache.flushdb(handleResponse(cb)),
-    keys: cb => redisCache.keys(handleResponse(cb)),
+    keys: (pattern, cb) => (
+      new Promise((resolve, reject) => {
+        if (typeof pattern === 'function') {
+          cb = pattern;
+          pattern = '*';
+        }
+
+        if (!cb) {
+          cb = (err, result) => (err ? reject(err) : resolve(result));
+        }
+
+        redisCache.keys(pattern, handleResponse(cb));
+      })
+    ),
     ttl: (key, cb) => redisCache.ttl(key, handleResponse(cb)),
-    isCacheableValue: args.isCacheableValue || (value => value !== undefined && value !== null),
+    isCacheableValue: storeArgs.is_cacheable_value || (value => value !== undefined && value !== null),
   };
 };
 

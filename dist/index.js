@@ -5,11 +5,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var Redis = _interopDefault(require('redis'));
 
 var redisStore = function redisStore() {
-  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
-  }
-
-  var redisCache = Redis.createClient.apply(Redis, args);
+  var redisCache = Redis.createClient.apply(Redis, arguments);
   var storeArgs = redisCache.options;
 
   return {
@@ -66,13 +62,26 @@ var redisStore = function redisStore() {
     reset: function reset(cb) {
       return redisCache.flushdb(handleResponse(cb));
     },
-    keys: function keys(cb) {
-      return redisCache.keys(handleResponse(cb));
+    keys: function keys(pattern, cb) {
+      return new Promise(function (resolve, reject) {
+        if (typeof pattern === 'function') {
+          cb = pattern;
+          pattern = '*';
+        }
+
+        if (!cb) {
+          cb = function cb(err, result) {
+            return err ? reject(err) : resolve(result);
+          };
+        }
+
+        redisCache.keys(pattern, handleResponse(cb));
+      });
     },
     ttl: function ttl(key, cb) {
       return redisCache.ttl(key, handleResponse(cb));
     },
-    isCacheableValue: args.isCacheableValue || function (value) {
+    isCacheableValue: storeArgs.is_cacheable_value || function (value) {
       return value !== undefined && value !== null;
     }
   };

@@ -8,6 +8,16 @@
     ]
   ],
   "plugins": [
-    "external-helpers"
-  ]
+    "external-helpers",
+  ],
+  "env": {
+    "test": {
+      "presets": [
+        "es2015"
+      ],
+      "plugins": [
+        "transform-runtime"
+      ]
+    }
+  }
 }
