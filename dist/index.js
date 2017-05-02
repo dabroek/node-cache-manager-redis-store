@@ -4,15 +4,21 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var Redis = _interopDefault(require('redis'));
 
-const redisStore = (...args) => {
-  const redisCache = Redis.createClient(...args);
-  const storeArgs = redisCache.options;
+var redisStore = function redisStore() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var redisCache = Redis.createClient.apply(Redis, args);
+  var storeArgs = redisCache.options;
 
   return {
     name: 'redis',
-    getClient: () => redisCache,
-    set: (key, value, options, cb) => (
-      new Promise((resolve, reject) => {
+    getClient: function getClient() {
+      return redisCache;
+    },
+    set: function set(key, value, options, cb) {
+      return new Promise(function (resolve, reject) {
         if (typeof options === 'function') {
           cb = options;
           options = {};
@@ -20,48 +26,62 @@ const redisStore = (...args) => {
         options = options || {};
 
         if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
+          cb = function cb(err, result) {
+            return err ? reject(err) : resolve(result);
+          };
         }
 
-        const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
-        const val = JSON.stringify(value) || '"undefined"';
+        var ttl = options.ttl || options.ttl === 0 ? options.ttl : storeArgs.ttl;
+        var val = JSON.stringify(value) || '"undefined"';
 
         if (ttl) {
           redisCache.setex(key, ttl, val, handleResponse(cb));
         } else {
           redisCache.set(key, val, handleResponse(cb));
         }
-      })
-    ),
-    get: (key, options, cb) => (
-      new Promise((resolve, reject) => {
+      });
+    },
+    get: function get(key, options, cb) {
+      return new Promise(function (resolve, reject) {
         if (typeof options === 'function') {
           cb = options;
         }
 
         if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
+          cb = function cb(err, result) {
+            return err ? reject(err) : resolve(result);
+          };
         }
 
         redisCache.get(key, handleResponse(cb, { parse: true }));
-      })
-    ),
-    del: (key, options, cb) => {
+      });
+    },
+    del: function del(key, options, cb) {
       if (typeof options === 'function') {
         cb = options;
       }
 
       redisCache.del(key, handleResponse(cb));
     },
-    reset: cb => redisCache.flushdb(handleResponse(cb)),
-    keys: cb => redisCache.keys(handleResponse(cb)),
-    ttl: (key, cb) => redisCache.ttl(key, handleResponse(cb)),
-    isCacheableValue: args.isCacheableValue || (value => value !== undefined && value !== null),
+    reset: function reset(cb) {
+      return redisCache.flushdb(handleResponse(cb));
+    },
+    keys: function keys(cb) {
+      return redisCache.keys(handleResponse(cb));
+    },
+    ttl: function ttl(key, cb) {
+      return redisCache.ttl(key, handleResponse(cb));
+    },
+    isCacheableValue: args.isCacheableValue || function (value) {
+      return value !== undefined && value !== null;
+    }
   };
 };
 
-function handleResponse(cb, opts = {}) {
-  return (err, result) => {
+function handleResponse(cb) {
+  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  return function (err, result) {
     if (err) {
       return cb && cb(err);
     }
@@ -78,8 +98,10 @@ function handleResponse(cb, opts = {}) {
   };
 }
 
-const methods = {
-  create: (...args) => redisStore(...args),
+var methods = {
+  create: function create() {
+    return redisStore.apply(undefined, arguments);
+  }
 };
 
 module.exports = methods;
