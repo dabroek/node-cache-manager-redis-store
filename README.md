@@ -1,3 +1,8 @@
+[![build status](https://travis-ci.org/dabroek/node-cache-manager-redis-store.svg?branch=master)](https://travis-ci.org/dabroek/node-cache-manager-redis-store)
+[![dependencies status](https://david-dm.org/dabroek/node-cache-manager-redis-store/status.svg)](https://david-dm.org/dabroek/node-cache-manager-redis-store)
+[![npm version](https://badge.fury.io/js/cache-manager-redis-store.svg)](https://badge.fury.io/js/cache-manager-redis-store)
+[![GitHub issues](https://img.shields.io/github/issues/dabroek/node-cache-manager-redis-store.svg)](https://github.com/dabroek/node-cache-manager-redis-store/issues)
+
 Redis store for node cache manager
 ==================================
 
@@ -41,7 +46,7 @@ var redisCache = cacheManager.caching({
 });
 
 // listen for redis connection error event
-var redisClient = redisCache.getClient();
+var redisClient = redisCache.store.getClient();
 
 redisClient.on('error', (error) => {
   // handle error here
