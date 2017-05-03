@@ -11,7 +11,7 @@
   },
   "scripts": {
     "prepublish": "npm prune",
-    "test": "jest",
+    "test": "jest --forceExit",
     "build": "rollup -c"
   },
   "dependencies": {

@@ -9,7 +9,7 @@ const config = {
   port: 6379,
   auth_pass: undefined,
   db: 0,
-  ttl: 60,
+  ttl: 5,
 };
 
 beforeEach(() => {
@@ -60,7 +60,6 @@ describe('initialization', () => {
       });
     });
   });
-
 });
 
 describe('set', () => {
@@ -203,7 +202,7 @@ describe('get', () => {
   });
 
   it('should retrieve a value for a given key', (done) => {
-    var value = 'bar';
+    const value = 'bar';
     redisCache.set('foo', value, () => {
       redisCache.get('foo', (err, result) => {
         expect(err).toEqual(null);
@@ -214,7 +213,7 @@ describe('get', () => {
   });
 
   it('should retrieve a value for a given key if options provided', (done) => {
-    var value = 'bar';
+    const value = 'bar';
     redisCache.set('foo', value, () => {
       redisCache.get('foo', {}, (err, result) => {
         expect(err).toEqual(null);
@@ -405,7 +404,9 @@ describe('overridable isCacheableValue function', () => {
   beforeEach(() => {
     redisCache2 = cacheManager.caching({
       store: redisStore,
-      isCacheableValue: () => { return 'I was overridden'; }
+      isCacheableValue: () => {
+        return 'I was overridden';
+      }
     });
   });
 
@@ -420,7 +421,7 @@ describe('defaults are set by redis itself', () => {
 
   beforeEach(() => {
     redisCache2 = cacheManager.caching({
-      store: redisStore
+      store: redisStore,
     });
   });
 
