@@ -12,7 +12,7 @@ const config = {
   ttl: 5,
 };
 
-beforeEach(() => {
+beforeEach((done) => {
   redisCache = cacheManager.caching({
     store: redisStore,
     host: config.host,
@@ -38,6 +38,8 @@ beforeEach(() => {
       return redisCache.store.isCacheableValue(val);
     }
   });
+
+  redisCache.store.getClient().once('ready', () => redisCache.reset(done));
 });
 
 describe('initialization', () => {
