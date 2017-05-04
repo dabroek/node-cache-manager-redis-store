@@ -3,11 +3,11 @@ import Redis from 'ioredis';
 const redisStore = (...args) => {
   let redisCache = null
 
-  if (args.clusterConfig) {
+  if (args.length > 0 && args[0].clusterConfig) {
     const {
       nodes,
       options
-    } = args.clusterConfig;
+    } = args[0].clusterConfig;
 
     redisCache = new Redis.Cluster(nodes, options || {});
   } else {

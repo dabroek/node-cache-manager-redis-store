@@ -11,10 +11,10 @@ var redisStore = function redisStore() {
 
   var redisCache = null;
 
-  if (args.clusterConfig) {
-    var _args$clusterConfig = args.clusterConfig,
-        nodes = _args$clusterConfig.nodes,
-        options = _args$clusterConfig.options;
+  if (args.length > 0 && args[0].clusterConfig) {
+    var _args$0$clusterConfig = args[0].clusterConfig,
+        nodes = _args$0$clusterConfig.nodes,
+        options = _args$0$clusterConfig.options;
 
 
     redisCache = new Redis.Cluster(nodes, options || {});
