@@ -1,7 +1,19 @@
-import Redis from 'redis';
+import Redis from 'ioredis';
 
 const redisStore = (...args) => {
-  const redisCache = Redis.createClient(...args);
+  let redisCache = null
+
+  if (args.clusterConfig) {
+    const {
+      nodes,
+      options
+    } = args.clusterConfig;
+
+    redisCache = new Redis.Cluster(nodes, options || {});
+  } else {
+    redisCache = new Redis(...args);
+  }
+
   const storeArgs = redisCache.options;
 
   return {
@@ -65,7 +77,7 @@ const redisStore = (...args) => {
       })
     ),
     ttl: (key, cb) => redisCache.ttl(key, handleResponse(cb)),
-    isCacheableValue: storeArgs.is_cacheable_value || (value => value !== undefined && value !== null),
+    isCacheableValue: storeArgs.isCacheableValue || (value => value !== undefined && value !== null),
   };
 };
 

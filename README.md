@@ -12,7 +12,7 @@ How is this package different from `node-cache-manager-redis`?
 ----------------------------------------------------------------------------------
 This is a **completely different version** than the earlier [node-cache-manager-redis](https://github.com/dial-once/node-cache-manager-redis). This package does not use `redis-pool` which is unnecessary and not actively maintained.
  
-This package aims to provide **the most simple wrapper possible** by just passing the configuration to the underlying `node_redis` package.
+This package aims to provide **the most simple wrapper possible** by just passing the configuration to the underlying `ioredis` package.
 
 Installation
 ------------
@@ -137,6 +137,33 @@ multiCache.wrap(key2, (cb) => {
   }, (err, user) => {
     console.log(user);
   });
+});
+```
+
+### Use Clustering (eg Amazon elasticache)
+
+```
+var cacheManager = require('cache-manager');
+var redisStore = require('cache-manager-redis-store');
+
+// https://github.com/luin/ioredis#cluster
+var redisCache = cacheManager.caching({
+  store: redisStore,
+  clusterConfig: {
+    nodes: [
+      {
+        port: 6380,
+        host: '127.0.0.1'
+      }, 
+      {
+        port: 6381,
+        host: '127.0.0.1'
+      }
+    ],
+    options: {
+      maxRedirections: 16
+    }
+  }
 });
 ```
 

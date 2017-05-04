@@ -15,7 +15,7 @@
     "build": "rollup -c"
   },
   "dependencies": {
-    "redis": "^2.7.1"
+    "ioredis": "3.0.0-2"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

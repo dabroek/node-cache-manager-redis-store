@@ -2,10 +2,26 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var Redis = _interopDefault(require('redis'));
+var Redis = _interopDefault(require('ioredis'));
 
 var redisStore = function redisStore() {
-  var redisCache = Redis.createClient.apply(Redis, arguments);
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var redisCache = null;
+
+  if (args.clusterConfig) {
+    var _args$clusterConfig = args.clusterConfig,
+        nodes = _args$clusterConfig.nodes,
+        options = _args$clusterConfig.options;
+
+
+    redisCache = new Redis.Cluster(nodes, options || {});
+  } else {
+    redisCache = new (Function.prototype.bind.apply(Redis, [null].concat(args)))();
+  }
+
   var storeArgs = redisCache.options;
 
   return {
@@ -81,7 +97,7 @@ var redisStore = function redisStore() {
     ttl: function ttl(key, cb) {
       return redisCache.ttl(key, handleResponse(cb));
     },
-    isCacheableValue: storeArgs.is_cacheable_value || function (value) {
+    isCacheableValue: storeArgs.isCacheableValue || function (value) {
       return value !== undefined && value !== null;
     }
   };
