@@ -1,4 +1,5 @@
 [![build status](https://travis-ci.org/dabroek/node-cache-manager-redis-store.svg?branch=master)](https://travis-ci.org/dabroek/node-cache-manager-redis-store)
+[![coverage status](https://coveralls.io/repos/github/dabroek/node-cache-manager-redis-store/badge.svg?branch=master)](https://coveralls.io/github/dabroek/node-cache-manager-redis-store?branch=master)
 [![dependencies status](https://david-dm.org/dabroek/node-cache-manager-redis-store/status.svg)](https://david-dm.org/dabroek/node-cache-manager-redis-store)
 [![npm version](https://badge.fury.io/js/cache-manager-redis-store.svg)](https://badge.fury.io/js/cache-manager-redis-store)
 [![GitHub issues](https://img.shields.io/github/issues/dabroek/node-cache-manager-redis-store.svg)](https://github.com/dabroek/node-cache-manager-redis-store/issues)

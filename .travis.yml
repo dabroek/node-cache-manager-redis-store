@@ -3,4 +3,5 @@ language: node_js
 node_js:
   - "node"
   - "4.2"
+script: 'npm run test-cov'
 services: redis-server
