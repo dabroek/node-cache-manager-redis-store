@@ -53,7 +53,7 @@ describe('initialization', () => {
       ttl: config.ttl
     });
 
-    expect(redisPwdCache.store.getClient().options.password).toEqual(config.auth_pass);
+    expect(redisPwdCache.store.getClient().options.password).toEqual(null);
     redisPwdCache.set('pwdfoo', 'pwdbar', (err) => {
       expect(err).toEqual(null);
       redisCache.del('pwdfoo', (errDel) => {
@@ -140,7 +140,7 @@ describe('set', () => {
   });
 
   it('should store an undefined value if permitted by isCacheableValue', (done) => {
-    expect(customRedisCache.store.isCacheableValue(undefined)).toBe(true);
+    expect(customRedisCache.store.isCacheableValue(undefined), 'check isCacheableValue(undefined) to be true').toBe(true);
     customRedisCache.set('foo3', undefined, (err) => {
       try {
         expect(err).toEqual(null);
@@ -148,7 +148,7 @@ describe('set', () => {
           try {
             expect(err).toEqual(null);
             // redis stored undefined as 'undefined'
-            expect(data).toEqual('undefined');
+            expect(data, 'undefined data should be undefined').toEqual('undefined');
             done();
           } catch (e) {
             done(e);
@@ -428,11 +428,11 @@ describe('defaults are set by redis itself', () => {
   });
 
   it('should default the host to `127.0.0.1`', () => {
-    expect(redisCache2.store.getClient().connection_options.host).toEqual('127.0.0.1');
+    expect(redisCache2.store.getClient().connector.options.host).toEqual('localhost');
   });
 
   it('should default the port to 6379', () => {
-    expect(redisCache2.store.getClient().connection_options.port).toEqual(6379);
+    expect(redisCache2.store.getClient().connector.options.port).toEqual(6379);
   });
 });
 
