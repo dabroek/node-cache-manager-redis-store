@@ -78,6 +78,43 @@ var redisStore = function redisStore() {
         redisCache.keys(pattern, handleResponse(cb));
       });
     },
+    scan: function keys(pattern, cb) {
+      return new Promise(function (resolve, reject) {
+        if (typeof pattern === 'function') {
+          cb = pattern;
+          pattern = '*';
+        }
+
+        if (!cb) {
+          cb = function cb(err, result) {
+            return err ? reject(err) : resolve(result);
+          };
+        }
+        
+        
+        var cursor = '0';
+        var results = [];
+        
+        var whileScan = (cb) => {
+            redisCache.scan(cursor,
+            'MATCH', pattern,
+            'COUNT', '1000',
+            function (err, res) {            
+              if (err) throw err;
+              
+              cursor = res[0];
+              results.concat(res[1]);
+              
+              if(cursor == 0)
+                cb(results);
+              else 
+                whileScan(cb);
+             });
+        }  
+        
+        whileScan(handleResponse(cb));
+      });
+    },
     ttl: function ttl(key, cb) {
       return redisCache.ttl(key, handleResponse(cb));
     },
