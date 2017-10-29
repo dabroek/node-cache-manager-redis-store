@@ -75,22 +75,6 @@ var redisStore = function redisStore() {
             return err ? reject(err) : resolve(result);
           };
         }
-
-        redisCache.keys(pattern, handleResponse(cb));
-      });
-    },
-    scan: function keys(pattern, cb) {
-      return new Promise(function (resolve, reject) {
-        if (typeof pattern === 'function') {
-          cb = pattern;
-          pattern = '*';
-        }
-
-        if (!cb) {
-          cb = function cb(err, result) {
-            return err ? reject(err) : resolve(result);
-          };
-        }
         
         
         var cursor = '0';
