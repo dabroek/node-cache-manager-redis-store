@@ -7,6 +7,7 @@ var Redis = _interopDefault(require('redis'));
 var redisStore = function redisStore() {
   var redisCache = Redis.createClient.apply(Redis, arguments);
   var storeArgs = redisCache.options;
+  var Promise = storeArgs.promiseDependency || global.Promise;
 
   return {
     name: 'redis',
