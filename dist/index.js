@@ -85,13 +85,13 @@ var redisStore = function redisStore() {
             'MATCH', pattern,
             'COUNT', '1000',
             function (err, res) {            
-              if (err) throw err;
+              if (err) return cb(err);
               
               cursor = res[0];
               results.concat(res[1]);
               
               if(cursor == 0)
-                cb(results);
+                cb(null, results);
               else 
                 whileScan(cb);
              });
