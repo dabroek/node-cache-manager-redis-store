@@ -7,6 +7,7 @@ var Redis = _interopDefault(require('redis'));
 var redisStore = function redisStore() {
   var redisCache = Redis.createClient.apply(Redis, arguments);
   var storeArgs = redisCache.options;
+  var Promise = storeArgs.promiseDependency || global.Promise;
 
   return {
     name: 'redis',
@@ -74,8 +75,29 @@ var redisStore = function redisStore() {
             return err ? reject(err) : resolve(result);
           };
         }
-
-        redisCache.keys(pattern, handleResponse(cb));
+        
+        
+        var cursor = '0';
+        var results = [];
+        
+        var whileScan = (cb) => {
+            redisCache.scan(cursor,
+            'MATCH', pattern,
+            'COUNT', '1000',
+            function (err, res) {            
+              if (err) return cb(err);
+              
+              cursor = res[0];
+              results = results.concat(res[1]);
+              
+              if(cursor == 0)
+                cb(null, results);
+              else 
+                whileScan(cb);
+             });
+        }  
+        
+        whileScan(handleResponse(cb));
       });
     },
     ttl: function ttl(key, cb) {
