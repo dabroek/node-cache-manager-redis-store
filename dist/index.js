@@ -88,7 +88,7 @@ var redisStore = function redisStore() {
               if (err) return cb(err);
               
               cursor = res[0];
-              results.concat(res[1]);
+              results = results.concat(res[1]);
               
               if(cursor == 0)
                 cb(null, results);
