@@ -53,14 +53,30 @@ var redisStore = function redisStore() {
       });
     },
     del: function del(key, options, cb) {
-      if (typeof options === 'function') {
-        cb = options;
-      }
+      return new Promise(function (resolve, reject) {
+        if (typeof options === 'function') {
+          cb = options;
+        }
 
-      redisCache.del(key, handleResponse(cb));
+        if (!cb) {
+          cb = function cb(err, result) {
+            return err ? reject(err) : resolve(result);
+          };
+        }
+
+        redisCache.del(key, handleResponse(cb));
+      });
     },
     reset: function reset(cb) {
-      return redisCache.flushdb(handleResponse(cb));
+      return new Promise(function (resolve, reject) {
+        if (!cb) {
+          cb = function cb(err, result) {
+            return err ? reject(err) : resolve(result);
+          };
+        }
+
+        redisCache.flushdb(handleResponse(cb));
+      });
     },
     keys: function keys(pattern, cb) {
       return new Promise(function (resolve, reject) {
@@ -79,7 +95,15 @@ var redisStore = function redisStore() {
       });
     },
     ttl: function ttl(key, cb) {
-      return redisCache.ttl(key, handleResponse(cb));
+      return new Promise(function (resolve, reject) {
+        if (!cb) {
+          cb = function cb(err, result) {
+            return err ? reject(err) : resolve(result);
+          };
+        }
+
+        redisCache.ttl(key, handleResponse(cb));
+      });
     },
     isCacheableValue: storeArgs.is_cacheable_value || function (value) {
       return value !== undefined && value !== null;

@@ -42,14 +42,28 @@ const redisStore = (...args) => {
         redisCache.get(key, handleResponse(cb, { parse: true }));
       })
     ),
-    del: (key, options, cb) => {
-      if (typeof options === 'function') {
-        cb = options;
-      }
+    del: (key, options, cb) => (
+      new Promise((resolve, reject) => {
+        if (typeof options === 'function') {
+          cb = options;
+        }
 
-      redisCache.del(key, handleResponse(cb));
-    },
-    reset: cb => redisCache.flushdb(handleResponse(cb)),
+        if (!cb) {
+          cb = (err, result) => (err ? reject(err) : resolve(result));
+        }
+  
+        redisCache.del(key, handleResponse(cb));
+      })
+    ),
+    reset: cb => (
+      new Promise((resolve, reject) => {
+        if (!cb) {
+          cb = (err, result) => (err ? reject(err) : resolve(result));
+        }
+  
+        redisCache.flushdb(handleResponse(cb));
+      })
+    ),
     keys: (pattern, cb) => (
       new Promise((resolve, reject) => {
         if (typeof pattern === 'function') {
@@ -64,7 +78,15 @@ const redisStore = (...args) => {
         redisCache.keys(pattern, handleResponse(cb));
       })
     ),
-    ttl: (key, cb) => redisCache.ttl(key, handleResponse(cb)),
+    ttl: (key, cb) => (
+      new Promise((resolve, reject) => {
+        if (!cb) {
+          cb = (err, result) => (err ? reject(err) : resolve(result));
+        }
+
+        redisCache.ttl(key, handleResponse(cb));
+      })
+    ),
     isCacheableValue: storeArgs.is_cacheable_value || (value => value !== undefined && value !== null),
   };
 };

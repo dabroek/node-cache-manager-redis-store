@@ -243,6 +243,11 @@ describe('get', () => {
 });
 
 describe('del', () => {
+  it('should return a promise', (done) => {
+    expect(redisCache.del('foo')).toBeInstanceOf(Promise);
+    done();
+  });
+  
   it('should delete a value for a given key', (done) => {
     redisCache.set('foo', 'bar', () => {
       redisCache.del('foo', (err) => {
@@ -269,6 +274,11 @@ describe('del', () => {
 });
 
 describe('reset', () => {
+  it('should return a promise', (done) => {
+    expect(redisCache.reset()).toBeInstanceOf(Promise);
+    done();
+  });
+
   it('should flush underlying db', (done) => {
     redisCache.reset((err) => {
       expect(err).toEqual(null);
@@ -291,6 +301,11 @@ describe('reset', () => {
 });
 
 describe('ttl', () => {
+  it('should return a promise', (done) => {
+    expect(redisCache.ttl('foo')).toBeInstanceOf(Promise);
+    done();
+  });
+
   it('should retrieve ttl for a given key', (done) => {
     redisCache.set('foo', 'bar', () => {
       redisCache.ttl('foo', (err, ttl) => {
