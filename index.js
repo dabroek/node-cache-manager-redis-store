@@ -29,6 +29,62 @@ const redisStore = (...args) => {
         }
       })
     ),
+    mset: function(...args) {
+      const _this = this;
+
+      return new Promise((resolve, reject) => {
+        let cb;
+        let options = {};
+
+        if (typeof args[args.length - 1] === 'function') {
+          cb = args.pop();
+        }
+
+        if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
+          options = args.pop();
+        }
+
+        if (!cb) {
+          cb = (err, result) => (err ? reject(err) : resolve(result));
+        }
+
+        const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
+
+        let multi;
+        if (ttl) {
+          multi = redisCache.multi();
+        }
+
+        const length = args.length;
+        let key;
+        let value;
+        const parsed = [];
+        for (let i = 0; i < length; i += 2) {
+          key = args[i];
+          value = args[i + 1];
+
+          /**
+           * Make sure the value is cacheable
+           */
+          if (!_this.isCacheableValue(value)) {
+            return cb(new Error(`value cannot be ${value}`));
+          }
+
+          value = JSON.stringify(value) || '"undefined"';
+          parsed.push(...[key, value]);
+
+          if (ttl) {
+            multi.setex(key, ttl, value);
+          }
+        }
+
+        if (ttl) {
+          multi.exec(handleResponse(cb));
+        } else {
+          redisCache.mset.apply(redisCache, [...parsed, cb]);
+        }
+      });
+    },
     get: (key, options, cb) => (
       new Promise((resolve, reject) => {
         if (typeof options === 'function') {
@@ -42,17 +98,45 @@ const redisStore = (...args) => {
         redisCache.get(key, handleResponse(cb, { parse: true }));
       })
     ),
-    del: (key, options, cb) => (
+    mget: (...args) => (
       new Promise((resolve, reject) => {
-        if (typeof options === 'function') {
-          cb = options;
+        let cb;
+        let options = {};
+
+        if (typeof args[args.length - 1] === 'function') {
+          cb = args.pop();
+        }
+
+        if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
+          options = args.pop();
         }
 
         if (!cb) {
           cb = (err, result) => (err ? reject(err) : resolve(result));
         }
-  
-        redisCache.del(key, handleResponse(cb));
+
+        redisCache.mget.apply(redisCache, [...args, handleResponse(cb, { parse: true })]);
+      })
+    ),
+    del: (...args) => (
+      new Promise((resolve, reject) => {
+        let cb;
+        let options = {};
+
+        if (typeof args[args.length - 1] === 'function') {
+          cb = args.pop();
+        }
+
+        if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
+          options = args.pop();
+        }
+
+        if (!cb) {
+          cb = (err, result) => (err ? reject(err) : resolve(result));
+        }
+
+        args.push(handleResponse(cb));
+        redisCache.del.apply(redisCache, args);
       })
     ),
     reset: cb => (
@@ -98,11 +182,21 @@ function handleResponse(cb, opts = {}) {
     }
 
     if (opts.parse) {
-      try {
-        result = JSON.parse(result);
-      } catch (e) {
-        return cb && cb(e);
+      let isMultiple = Array.isArray(result);
+      if (!isMultiple) {
+        result = [result];
       }
+
+      result = result.map((_result) => {
+        try {
+          _result = JSON.parse(_result);
+        } catch (e) {
+          return cb && cb(e);
+        }
+        return _result;
+      });
+
+      result = isMultiple ? result : result[0];
     }
 
     return cb && cb(null, result);
