@@ -99,7 +99,7 @@ var redisStore = function redisStore() {
         if (ttl) {
           multi.exec(handleResponse(cb));
         } else {
-          redisCache.mset.apply(redisCache, [].concat(parsed, [cb]));
+          redisCache.mset.apply(redisCache, [].concat(parsed, [handleResponse(cb)]));
         }
       });
     },
@@ -167,8 +167,7 @@ var redisStore = function redisStore() {
           };
         }
 
-        args.push(handleResponse(cb));
-        redisCache.del.apply(redisCache, args);
+        redisCache.del.apply(redisCache, [].concat(args, [handleResponse(cb)]));
       });
     },
     reset: function reset(cb) {

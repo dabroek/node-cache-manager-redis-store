@@ -81,7 +81,7 @@ const redisStore = (...args) => {
         if (ttl) {
           multi.exec(handleResponse(cb));
         } else {
-          redisCache.mset.apply(redisCache, [...parsed, cb]);
+          redisCache.mset.apply(redisCache, [...parsed, handleResponse(cb)]);
         }
       });
     },
@@ -135,8 +135,7 @@ const redisStore = (...args) => {
           cb = (err, result) => (err ? reject(err) : resolve(result));
         }
 
-        args.push(handleResponse(cb));
-        redisCache.del.apply(redisCache, args);
+        redisCache.del.apply(redisCache, [...args, handleResponse(cb)]);
       })
     ),
     reset: cb => (
