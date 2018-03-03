@@ -55,11 +55,10 @@ const redisStore = (...args) => {
           multi = redisCache.multi();
         }
 
-        const length = args.length;
         let key;
         let value;
         const parsed = [];
-        for (let i = 0; i < length; i += 2) {
+        for (let i = 0; i < args.length; i += 2) {
           key = args[i];
           value = args[i + 1];
 

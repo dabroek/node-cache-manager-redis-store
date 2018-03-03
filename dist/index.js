@@ -73,11 +73,10 @@ var redisStore = function redisStore() {
           multi = redisCache.multi();
         }
 
-        var length = args.length;
         var key = void 0;
         var value = void 0;
         var parsed = [];
-        for (var i = 0; i < length; i += 2) {
+        for (var i = 0; i < args.length; i += 2) {
           key = args[i];
           value = args[i + 1];
 
