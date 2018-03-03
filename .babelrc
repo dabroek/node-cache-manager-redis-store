@@ -8,7 +8,7 @@
     ]
   ],
   "plugins": [
-    "external-helpers",
+    "external-helpers"
   ],
   "env": {
     "test": {
