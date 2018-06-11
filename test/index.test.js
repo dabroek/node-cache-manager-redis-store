@@ -569,6 +569,15 @@ describe('keys', () => {
     });
   });
 
+  it('should return an array of all keys if called without a pattern', (done) => {
+    redisCache.mset('foo', 'bar', 'foo2', 'bar2', 'foo3', 'bar3')
+      .then(() => redisCache.keys())
+      .then(result => {
+        expect(result).toHaveLength(3);
+        done();
+      });
+  });
+
   it('should return an array of keys without pattern', (done) => {
     redisCache.set('foo', 'bar', () => {
       redisCache.keys((err, arrayOfKeys) => {
@@ -625,6 +634,7 @@ describe('overridable isCacheableValue function', () => {
   beforeEach(() => {
     redisCache2 = cacheManager.caching({
       store: redisStore,
+      auth_pass: config.auth_pass,
       isCacheableValue: () => {
         return 'I was overridden';
       }
@@ -643,6 +653,7 @@ describe('defaults are set by redis itself', () => {
   beforeEach(() => {
     redisCache2 = cacheManager.caching({
       store: redisStore,
+      auth_pass: config.auth_pass,
     });
   });
 

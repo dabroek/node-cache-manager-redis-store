@@ -2,7 +2,7 @@
   "name": "cache-manager-redis-store",
   "author": "Matthijs Dabroek <dabroek@gmail.com>",
   "description": "Redis store for node-cache-manager",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -10,7 +10,7 @@
     "url": "https://github.com/dabroek/node-cache-manager-redis-store.git"
   },
   "scripts": {
-    "prepublish": "npm prune",
+    "prepare": "npm prune",
     "test": "jest --forceExit",
     "test-cov": "jest --forceExit --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "build": "rollup -c"
@@ -25,7 +25,7 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-runtime": "^6.26.0",
-    "cache-manager": "^2.7.0",
+    "cache-manager": "^2.9.0",
     "coveralls": "^2.13.1",
     "jest": "^20.0.4",
     "rollup": "^0.41.6",

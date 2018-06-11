@@ -180,7 +180,9 @@ var redisStore = function redisStore() {
         redisCache.flushdb(handleResponse(cb));
       });
     },
-    keys: function keys(pattern, cb) {
+    keys: function keys() {
+      var pattern = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '*';
+      var cb = arguments[1];
       return new Promise(function (resolve, reject) {
         if (typeof pattern === 'function') {
           cb = pattern;
