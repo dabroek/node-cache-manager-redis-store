@@ -146,7 +146,7 @@ const redisStore = (...args) => {
         redisCache.flushdb(handleResponse(cb));
       })
     ),
-    keys: (pattern, cb) => (
+    keys: (pattern = '*', cb) => (
       new Promise((resolve, reject) => {
         if (typeof pattern === 'function') {
           cb = pattern;
