@@ -65,8 +65,8 @@ describe('initialization', () => {
   });
 
   it('should use provided redisClient if one is provided', () => {
-    const dbName = 'a_different_db';
-    const redisClient = Redis.createClient({ db: dbName });
+    const ttl = 42;
+    const redisClient = Redis.createClient({ ttl });
 
     const redisCacheWithCustomClient = cacheManager.caching({
       store: redisStore,
@@ -74,7 +74,7 @@ describe('initialization', () => {
     });
 
     expect(redisCacheWithCustomClient.store.getClient()).toEqual(redisClient);
-    expect(redisCacheWithCustomClient.store.getClient().options.db).toEqual(dbName);
+    expect(redisCacheWithCustomClient.store.getClient().options.ttl).toEqual(ttl);
   });
 });
 
