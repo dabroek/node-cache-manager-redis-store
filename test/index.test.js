@@ -63,6 +63,19 @@ describe('initialization', () => {
       });
     });
   });
+
+  it('should use provided redisClient if one is provided', () => {
+    const dbName = 'a_different_db';
+    const redisClient = Redis.createClient({ db: dbName });
+
+    const redisCacheWithCustomClient = cacheManager.caching({
+      store: redisStore,
+      redisClient,
+    });
+
+    expect(redisCacheWithCustomClient.store.getClient()).toEqual(redisClient);
+    expect(redisCacheWithCustomClient.store.getClient().options.db).toEqual(dbName);
+  });
 });
 
 describe('set', () => {
@@ -722,18 +735,5 @@ describe('wrap function', () => {
         )
           .then((user) => expect(user.id).toEqual(userId));
       });
-  });
-
-  it('should use provided redisClient if one is provided', () => {
-      const dbName = 'a_different_db';
-      const redisClient = Redis.createClient({ db: dbName });
-
-      const redisCacheWithCustomClient = cacheManager.caching({
-        store: redisStore,
-        redisClient,
-      });
-
-      expect(redisCacheWithCustomClient.store.getClient()).toEqual(redisClient)
-      expect(redisCacheWithCustomClient.store.getClient().options.db).toEqual(dbName)
   });
 });
