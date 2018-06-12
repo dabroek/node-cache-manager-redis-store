@@ -733,7 +733,7 @@ describe('wrap function', () => {
         redisClient,
       });
 
-      expect(redisCacheWithCustomClient.store.getClient() === redisClient).toEqual(true)
+      expect(redisCacheWithCustomClient.store.getClient()).toEqual(redisClient)
       expect(redisCacheWithCustomClient.store.getClient().options.db).toEqual(dbName)
   });
 });
