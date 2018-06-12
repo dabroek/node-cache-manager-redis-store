@@ -1,3 +1,4 @@
+import Redis from 'redis';
 import cacheManager from 'cache-manager';
 import redisStore from '../index';
 
@@ -721,5 +722,18 @@ describe('wrap function', () => {
         )
           .then((user) => expect(user.id).toEqual(userId));
       });
+  });
+
+  it('should use provided redisClient if one is provided', () => {
+      const dbName = 'a_different_db';
+      const redisClient = Redis.createClient({ db: dbName });
+
+      const redisCacheWithCustomClient = cacheManager.caching({
+        store: redisStore,
+        redisClient,
+      });
+
+      expect(redisCacheWithCustomClient.store.getClient() === redisClient).toEqual(true)
+      expect(redisCacheWithCustomClient.store.getClient().options.db).toEqual(dbName)
   });
 });

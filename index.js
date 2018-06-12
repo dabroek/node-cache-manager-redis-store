@@ -1,7 +1,14 @@
 import Redis from 'redis';
 
 const redisStore = (...args) => {
-  const redisCache = Redis.createClient(...args);
+  let redisCache
+
+  if (args.length > 0 && args[0].redisClient) {
+    redisCache = args[0].redisClient;
+  } else {
+    redisCache = Redis.createClient(...args);
+  }
+
   const storeArgs = redisCache.options;
 
   return {
@@ -142,7 +149,7 @@ const redisStore = (...args) => {
         if (!cb) {
           cb = (err, result) => (err ? reject(err) : resolve(result));
         }
-  
+
         redisCache.flushdb(handleResponse(cb));
       })
     ),
