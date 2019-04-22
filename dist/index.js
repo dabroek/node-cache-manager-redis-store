@@ -104,9 +104,13 @@ var redisStore = function redisStore() {
     },
     get: function get(key, options, cb) {
       return new Promise(function (resolve, reject) {
+        var defaultOpts = { parse: true };
         if (typeof options === 'function') {
           cb = options;
+          options = defaultOpts;
         }
+
+        if (!options) defaultOpts = options;
 
         if (!cb) {
           cb = function cb(err, result) {
@@ -114,7 +118,7 @@ var redisStore = function redisStore() {
           };
         }
 
-        redisCache.get(key, handleResponse(cb, { parse: true }));
+        redisCache.get(key, handleResponse(cb, options));
       });
     },
     mget: function mget() {
