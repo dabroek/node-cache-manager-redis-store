@@ -2,7 +2,7 @@
   "name": "cache-manager-redis-store",
   "author": "Matthijs Dabroek <dabroek@gmail.com>",
   "description": "Redis store for node-cache-manager",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -33,6 +33,6 @@
     "rollup-plugin-babel": "^4.3.3"
   },
   "engines": {
-    "node": ">=4.2.0"
+    "node": ">= 8.3"
   }
 }
