@@ -7,8 +7,10 @@ const redisStore = (...args) => {
   return {
     name: 'redis',
     getClient: () => redisCache,
-    set: (key, value, options, cb) => (
-      new Promise((resolve, reject) => {
+    set: function(key, value, options, cb) {
+      const self = this;
+
+      return new Promise((resolve, reject) => {
         if (typeof options === 'function') {
           cb = options;
           options = {};
@@ -17,6 +19,10 @@ const redisStore = (...args) => {
 
         if (!cb) {
           cb = (err, result) => (err ? reject(err) : resolve(result));
+        }
+
+        if (!self.isCacheableValue(value)) {
+          return cb(new Error(`"${value}" is not a cacheable value`));
         }
 
         const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
@@ -28,9 +34,9 @@ const redisStore = (...args) => {
           redisCache.set(key, val, handleResponse(cb));
         }
       })
-    ),
+    },
     mset: function(...args) {
-      const _this = this;
+      const self = this;
 
       return new Promise((resolve, reject) => {
         let cb;
@@ -65,8 +71,8 @@ const redisStore = (...args) => {
           /**
            * Make sure the value is cacheable
            */
-          if (!_this.isCacheableValue(value)) {
-            return cb(new Error(`value cannot be ${value}`));
+          if (!self.isCacheableValue(value)) {
+            return cb(new Error(`"${value}" is not a cacheable value`));
           }
 
           value = JSON.stringify(value) || '"undefined"';

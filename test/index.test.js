@@ -131,7 +131,7 @@ describe('set', () => {
     redisCache.set('foo1', undefined, (err) => {
       try {
         expect(err).not.toEqual(null);
-        expect(err.message).toEqual('value cannot be undefined');
+        expect(err.message).toEqual('"undefined" is not a cacheable value');
         done();
       } catch (e) {
         done(e);
@@ -165,7 +165,7 @@ describe('set', () => {
     customRedisCache.set('foobar', 'FooBarString', (err) => {
       try {
         expect(err).not.toEqual(null);
-        expect(err.message).toEqual('value cannot be FooBarString');
+        expect(err.message).toEqual('"FooBarString" is not a cacheable value');
         done();
       } catch (e) {
         done(e);
@@ -250,7 +250,7 @@ describe('mset', () => {
     redisCache.mset('foo1', undefined, (err) => {
       if (err !== null) {
         expect(err).not.toEqual(null);
-        expect(err.message).toEqual('value cannot be undefined');
+        expect(err.message).toEqual('"undefined" is not a cacheable value');
         done();
       }
     });
@@ -274,7 +274,7 @@ describe('mset', () => {
     expect(customRedisCache.store.isCacheableValue('FooBarString')).toBe(false);
     customRedisCache.mset('foobar', 'FooBarString', (err) => {
       expect(err).not.toEqual(null);
-      expect(err.message).toEqual('value cannot be FooBarString');
+      expect(err.message).toEqual('"FooBarString" is not a cacheable value');
       if (err !== null) {
         done();
       }
@@ -306,9 +306,14 @@ describe('get', () => {
   });
 
   it('should reject promise on error', (done) => {
+    const client = redisCache.store.getClient();
+    client.get = (key, cb) => cb(new Error('Something went wrong'));
+    
     redisCache.get('foo')
-      .then(() => done(new Error('Should reject')))
-      .catch(() => done())
+      .catch((err) => {
+        expect(err.message).toEqual('Something went wrong');
+        done();
+      })
   });
 
   it('should retrieve a value for a given key', (done) => {
@@ -553,9 +558,14 @@ describe('keys', () => {
   });
 
   it('should reject promise on error', (done) => {
-    redisCache.keys('foo')
-      .then(() => done(new Error('Should reject')))
-      .catch(() => done())
+    const client = redisCache.store.getClient();
+    client.keys = (key, cb) => cb(new Error('Something went wrong'));
+
+    redisCache.keys('f*')
+      .catch((err) => {
+        expect(err.message).toEqual('Something went wrong');
+        done();
+      })
   });
 
   it('should return an array of keys for the given pattern', (done) => {
