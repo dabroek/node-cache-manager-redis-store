@@ -3,6 +3,8 @@ import Redis from 'redis';
 const redisStore = (...args) => {
   const redisCache = Redis.createClient(...args);
   const storeArgs = redisCache.options;
+  const serialize = storeArgs.serialize || (val=>JSON.stringify(value) || '"undefined"');
+  const unserialize = storeArgs.unserialize || (val=>JSON.parse(val));
 
   return {
     name: 'redis',
@@ -26,7 +28,7 @@ const redisStore = (...args) => {
         }
 
         const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
-        const val = JSON.stringify(value) || '"undefined"';
+        const val = serialize(value);
 
         if (ttl) {
           redisCache.setex(key, ttl, val, handleResponse(cb));
@@ -75,7 +77,7 @@ const redisStore = (...args) => {
             return cb(new Error(`"${value}" is not a cacheable value`));
           }
 
-          value = JSON.stringify(value) || '"undefined"';
+          value = serialize(value);
           parsed.push(...[key, value]);
 
           if (ttl) {
@@ -177,35 +179,37 @@ const redisStore = (...args) => {
     ),
     isCacheableValue: storeArgs.is_cacheable_value || (value => value !== undefined && value !== null),
   };
+
+
+    function handleResponse(cb, opts = {}) {
+        return (err, result) => {
+            if (err) {
+                return cb && cb(err);
+            }
+
+            if (opts.parse) {
+                let isMultiple = Array.isArray(result);
+                if (!isMultiple) {
+                    result = [result];
+                }
+
+                result = result.map((_result) => {
+                    try {
+                        _result = unserialize(_result);
+                    } catch (e) {
+                        return cb && cb(e);
+                    }
+                    return _result;
+                });
+
+                result = isMultiple ? result : result[0];
+            }
+
+            return cb && cb(null, result);
+        };
+    }
 };
 
-function handleResponse(cb, opts = {}) {
-  return (err, result) => {
-    if (err) {
-      return cb && cb(err);
-    }
-
-    if (opts.parse) {
-      let isMultiple = Array.isArray(result);
-      if (!isMultiple) {
-        result = [result];
-      }
-
-      result = result.map((_result) => {
-        try {
-          _result = JSON.parse(_result);
-        } catch (e) {
-          return cb && cb(e);
-        }
-        return _result;
-      });
-
-      result = isMultiple ? result : result[0];
-    }
-
-    return cb && cb(null, result);
-  };
-}
 
 const methods = {
   create: (...args) => redisStore(...args),

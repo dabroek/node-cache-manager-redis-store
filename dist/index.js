@@ -7,6 +7,15 @@ var Redis = _interopDefault(require('redis'));
 var redisStore = function redisStore() {
   var redisCache = Redis.createClient.apply(Redis, arguments);
   var storeArgs = redisCache.options;
+
+  var serialize = storeArgs.serialize || function (val) {
+    return JSON.stringify(value) || '"undefined"';
+  };
+
+  var unserialize = storeArgs.unserialize || function (val) {
+    return JSON.parse(val);
+  };
+
   return {
     name: 'redis',
     getClient: function getClient() {
@@ -33,7 +42,7 @@ var redisStore = function redisStore() {
         }
 
         var ttl = options.ttl || options.ttl === 0 ? options.ttl : storeArgs.ttl;
-        var val = JSON.stringify(value) || '"undefined"';
+        var val = serialize(value);
 
         if (ttl) {
           redisCache.setex(key, ttl, val, handleResponse(cb));
@@ -88,7 +97,7 @@ var redisStore = function redisStore() {
             return cb(new Error("\"".concat(value, "\" is not a cacheable value")));
           }
 
-          value = JSON.stringify(value) || '"undefined"';
+          value = serialize(value);
           parsed.push.apply(parsed, [key, value]);
 
           if (ttl) {
@@ -218,37 +227,37 @@ var redisStore = function redisStore() {
       return value !== undefined && value !== null;
     }
   };
-};
 
-function handleResponse(cb) {
-  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  return function (err, result) {
-    if (err) {
-      return cb && cb(err);
-    }
-
-    if (opts.parse) {
-      var isMultiple = Array.isArray(result);
-
-      if (!isMultiple) {
-        result = [result];
+  function handleResponse(cb) {
+    var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    return function (err, result) {
+      if (err) {
+        return cb && cb(err);
       }
 
-      result = result.map(function (_result) {
-        try {
-          _result = JSON.parse(_result);
-        } catch (e) {
-          return cb && cb(e);
+      if (opts.parse) {
+        var isMultiple = Array.isArray(result);
+
+        if (!isMultiple) {
+          result = [result];
         }
 
-        return _result;
-      });
-      result = isMultiple ? result : result[0];
-    }
+        result = result.map(function (_result) {
+          try {
+            _result = unserialize(_result);
+          } catch (e) {
+            return cb && cb(e);
+          }
 
-    return cb && cb(null, result);
-  };
-}
+          return _result;
+        });
+        result = isMultiple ? result : result[0];
+      }
+
+      return cb && cb(null, result);
+    };
+  }
+};
 
 var methods = {
   create: function create() {
