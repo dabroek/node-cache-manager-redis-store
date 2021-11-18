@@ -1,8 +1,10 @@
-import { Store } from "cache-manager";
-import { RedisClient } from "redis";
+import type { Store } from "cache-manager";
+import type { RedisClient } from "redis";
 
-interface RedisStore extends Store {
-  getClient: () => RedisClient;
+declare namespace redisStore {
+  function create(...args: unknown[]): {
+    getClient: () => RedisClient;
+  } & Store;
 }
 
-export default RedisStore;
+export default redisStore;
