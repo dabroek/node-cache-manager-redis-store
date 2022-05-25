@@ -8,7 +8,8 @@
     ]
   ],
   "plugins": [
-    "@babel/plugin-external-helpers"
+    "@babel/plugin-external-helpers",
+    "@babel/plugin-transform-runtime"
   ],
   "env": {
     "test": {
