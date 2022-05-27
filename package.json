@@ -5,7 +5,6 @@
   "version": "2.0.0",
   "license": "MIT",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/dabroek/node-cache-manager-redis-store.git"

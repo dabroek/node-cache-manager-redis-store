@@ -1,14 +1,32 @@
 import Redis from 'redis';
 
+const prepareKey = (cacheName, key) => `${cacheName}:${key}`
+const prepareKeys = (cacheName, keys) => {
+    const adjustedKeys = keys.flatMap(key => Array.isArray(key) ? key.map(intKey => prepareKey(cacheName, intKey)) : [prepareKey(cacheName, key)])
+
+    return adjustedKeys
+}
+
+const getKeys = async (redisCache, cacheName, pattern = '*') => {
+    const rawKeys = await new Promise((resolve, reject) => {
+        const cb = (err, result) => (err ? reject(err) : resolve(result))
+        return redisCache.keys(`${cacheName}:${pattern}`, cb)
+    })
+
+    return rawKeys?.map(key => key.replace(`${cacheName}:`, '')) ?? []
+}
+
 const redisStore = (...args) => {
   const redisCache = Redis.createClient(...args);
   const storeArgs = redisCache.options;
+  const cacheName = storeArgs && storeArgs.cache_name ? storeArgs.cache_name : 'DEFAULT'
 
   return {
     name: 'redis',
     getClient: () => redisCache,
-    set: function(key, value, options, cb) {
+    set: function(inKey, value, options, cb) {
       const self = this;
+      const key = prepareKey(cacheName, inKey);
 
       return new Promise((resolve, reject) => {
         if (typeof options === 'function') {
@@ -65,7 +83,7 @@ const redisStore = (...args) => {
         let value;
         const parsed = [];
         for (let i = 0; i < args.length; i += 2) {
-          key = args[i];
+          key = prepareKey(cacheName, args[i]);
           value = args[i + 1];
 
           /**
@@ -100,7 +118,8 @@ const redisStore = (...args) => {
           cb = (err, result) => (err ? reject(err) : resolve(result));
         }
 
-        redisCache.get(key, handleResponse(cb, { parse: true }));
+        const adjustedKey = prepareKey(cacheName, key);
+        redisCache.get(adjustedKey, handleResponse(cb, { parse: true }));
       })
     ),
     mget: (...args) => (
@@ -120,7 +139,8 @@ const redisStore = (...args) => {
           cb = (err, result) => (err ? reject(err) : resolve(result));
         }
 
-        redisCache.mget.apply(redisCache, [...args, handleResponse(cb, { parse: true })]);
+        const adjustedKeys = prepareKeys(cacheName, args);
+        redisCache.mget.apply(redisCache, [...adjustedKeys, handleResponse(cb, { parse: true })]);
       })
     ),
     del: (...args) => (
@@ -140,31 +160,48 @@ const redisStore = (...args) => {
           cb = (err, result) => (err ? reject(err) : resolve(result));
         }
 
-        redisCache.del.apply(redisCache, [...args, handleResponse(cb)]);
+        const adjustedKeys = prepareKeys(cacheName, args);
+        redisCache.del.apply(redisCache, [...adjustedKeys, handleResponse(cb)]);
       })
     ),
     reset: cb => (
-      new Promise((resolve, reject) => {
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
-  
-        redisCache.flushdb(handleResponse(cb));
-      })
+        new Promise(async (resolve, reject) => {
+            if (!cb) {
+                cb = (err, result) => (err ? reject(err) : resolve(result));
+            }
+
+            let allKeys
+            try {
+                allKeys = await getKeys(redisCache, cacheName, '*', undefined);
+            } catch(error) {
+                return handleResponse(cb, {keys: []})(error);
+            }
+            if(allKeys && allKeys.length > 0) {
+                redisCache.del.apply(redisCache, [...prepareKeys(cacheName, allKeys), handleResponse(cb, {keys: allKeys})]);
+            } else {
+                return handleResponse(cb, {keys: []})(null);
+            }
+        })
     ),
     keys: (pattern = '*', cb) => (
-      new Promise((resolve, reject) => {
-        if (typeof pattern === 'function') {
-          cb = pattern;
-          pattern = '*';
-        }
+        new Promise(async (resolve, reject) => {
+            if (typeof pattern === 'function') {
+                cb = pattern;
+                pattern = '*';
+            }
 
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+            if (!cb) {
+                cb = (err, result) => (err ? reject(err) : resolve(result));
+            }
 
-        redisCache.keys(pattern, handleResponse(cb));
-      })
+            try {
+                const keys = await getKeys(redisCache, cacheName, pattern, undefined);
+
+                handleResponse(cb, {keys})(null, keys);
+            } catch(error) {
+                handleResponse(cb)(error);
+            }
+        })
     ),
     ttl: (key, cb) => (
       new Promise((resolve, reject) => {
@@ -172,7 +209,8 @@ const redisStore = (...args) => {
           cb = (err, result) => (err ? reject(err) : resolve(result));
         }
 
-        redisCache.ttl(key, handleResponse(cb));
+        const adjustedKey = prepareKey(cacheName, key);
+        redisCache.ttl(adjustedKey, handleResponse(cb));
       })
     ),
     isCacheableValue: storeArgs.is_cacheable_value || (value => value !== undefined && value !== null),
