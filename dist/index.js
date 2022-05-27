@@ -334,14 +334,16 @@ var redisStore = function redisStore() {
 
                 case 5:
                   keys = _context3.sent;
-                  return _context3.abrupt("return", handleResponse(cb, {
+                  handleResponse(cb, {
                     keys: keys
-                  })(null, keys));
+                  })(null, keys);
+                  _context3.next = 12;
+                  break;
 
                 case 9:
                   _context3.prev = 9;
                   _context3.t0 = _context3["catch"](2);
-                  return _context3.abrupt("return", handleResponse(cb)(_context3.t0));
+                  handleResponse(cb)(_context3.t0);
 
                 case 12:
                 case "end":

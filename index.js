@@ -197,9 +197,9 @@ const redisStore = (...args) => {
             try {
                 const keys = await getKeys(redisCache, cacheName, pattern, undefined);
 
-                return handleResponse(cb, {keys})(null, keys);
+                handleResponse(cb, {keys})(null, keys);
             } catch(error) {
-                return handleResponse(cb)(error);
+                handleResponse(cb)(error);
             }
         })
     ),
