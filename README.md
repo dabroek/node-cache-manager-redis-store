@@ -7,12 +7,12 @@
 Redis store for node cache manager
 ==================================
 
-Redis cache store for [node-cache-manager](https://github.com/BryanDonovan/node-cache-manager). 
+Redis cache store for [node-cache-manager](https://github.com/BryanDonovan/node-cache-manager).
 
 How is this package different from `node-cache-manager-redis`?
 ----------------------------------------------------------------------------------
 This is a **completely different version** than the earlier [node-cache-manager-redis](https://github.com/dial-once/node-cache-manager-redis). This package does not use `redis-pool` which is unnecessary and not actively maintained.
- 
+
 This package aims to provide **the most simple wrapper possible** by just passing the configuration to the underlying `node_redis` package.
 
 Installation
@@ -138,6 +138,21 @@ multiCache.wrap(key2, (cb) => {
   }, (err, user) => {
     console.log(user);
   });
+});
+```
+
+### Existing Redis client
+
+```js
+var cacheManager = require('cache-manager');
+var redisStore = require('cache-manager-redis-store');
+var redis = require('redis');
+var redisClient = redis.createClient();
+
+var redisCache = cacheManager.caching({
+  store: redisStore,
+  client: redisClient,
+  ttl: 600
 });
 ```
 

@@ -1,5 +1,6 @@
 import cacheManager from 'cache-manager';
 import redisStore from '../index';
+import redis from 'redis';
 
 let redisCache;
 let customRedisCache;
@@ -308,7 +309,7 @@ describe('get', () => {
   it('should reject promise on error', (done) => {
     const client = redisCache.store.getClient();
     client.get = (key, cb) => cb(new Error('Something went wrong'));
-    
+
     redisCache.get('foo')
       .catch((err) => {
         expect(err.message).toEqual('Something went wrong');
@@ -692,6 +693,32 @@ describe('wrap function', () => {
       }, 100);
     });
   }
+
+  it('should work with manual client', () => {
+    var customClientCache = cacheManager.caching({
+      store: redisStore,
+      client: redis.createClient(config),
+    });
+
+    const userId = 123;
+
+    // First call to wrap should run the code
+    return customClientCache
+      .wrap(
+        'wrap-promise',
+        () => getUserPromise(userId),
+      )
+      .then((user) => {
+        expect(user.id).toEqual(userId);
+
+        // Second call to wrap should retrieve from cache
+        return customClientCache.wrap(
+          'wrap-promise',
+          () => getUserPromise(userId + 1),
+        )
+          .then((user) => expect(user.id).toEqual(userId));
+      });
+  })
 
   it('should be able to cache objects', (done) => {
     const userId = 123;
