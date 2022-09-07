@@ -17,7 +17,7 @@
     "build": "rollup -c"
   },
   "dependencies": {
-    "redis": "^3.0.2"
+    "redis": "^4.3.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -27,15 +27,15 @@
     "@babel/preset-env": "^7.8.4",
     "@babel/runtime": "^7.8.4",
     "@types/cache-manager": "^3.4.0",
-    "@types/redis": "^2.8.28",
-    "babel-jest": "^25.1.0",
+    "@types/redis": "^4.0.11",
+    "babel-jest": "^26.0.1",
     "cache-manager": "^2.9.0",
     "coveralls": "^3.0.9",
-    "jest": "^25.1.0",
+    "jest": "^26.0.1",
     "rollup": "^1.31.0",
     "rollup-plugin-babel": "^4.3.3"
   },
   "engines": {
-    "node": ">= 8.3"
+    "node": ">= 14.0"
   }
 }
