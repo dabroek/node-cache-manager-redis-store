@@ -1,8 +1,43 @@
-import Redis from 'redis';
+import { createClient } from 'redis';
 
-const redisStore = (...args) => {
-  const redisCache = Redis.createClient(...args);
-  const storeArgs = redisCache.options;
+export const generateConnectUrl = (config = {}) => {
+    let auth = '';
+    let connection = `${config.host}:${config.port ?? 6379}`;
+    let db = '';
+    if (config.username || config.password) {
+        auth = `${config.user ?? ''}${config.password !== undefined ? `:${config.password}` : ''}@`;
+    }
+    if (config.db !== undefined) {
+        db = `/${config.db}`;
+    }
+    return `redis://${auth}${connection}${db}`;
+}
+
+const redisStore = (args) => {
+    const {
+        store,
+        ...settings
+    } = args;
+  const redisCache = createClient({...settings, legacyMode: true});
+  const storeArgs = settings;
+  let connectedOnce = false;
+  redisCache.on('ready', () => {
+      connectedOnce = true;
+  })
+
+  const connect = () => {
+      return new Promise((resolve, reject) => {
+          if(connectedOnce) {
+             resolve();
+          } else {
+              redisCache.connect().then(() => {
+                  resolve();
+              }).catch((err) => {
+                  reject(err);
+              })
+          }
+      })
+  }
 
   return {
     name: 'redis',
@@ -11,171 +46,188 @@ const redisStore = (...args) => {
       const self = this;
 
       return new Promise((resolve, reject) => {
-        if (typeof options === 'function') {
-          cb = options;
-          options = {};
-        }
-        options = options || {};
+          return connect().then(() => {
+              if (typeof options === 'function') {
+                  cb = options;
+                  options = {};
+              }
+              options = options || {};
 
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+              if (!cb) {
+                  cb = (err, result) => (err ? reject(err) : resolve(result));
+              }
 
-        if (!self.isCacheableValue(value)) {
-          return cb(new Error(`"${value}" is not a cacheable value`));
-        }
+              if (!self.isCacheableValue(value)) {
+                  return cb(new Error(`"${value}" is not a cacheable value`));
+              }
 
-        const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
-        const val = JSON.stringify(value) || '"undefined"';
+              const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
+              const val = JSON.stringify(value) || '"undefined"';
 
-        if (ttl) {
-          redisCache.setex(key, ttl, val, handleResponse(cb));
-        } else {
-          redisCache.set(key, val, handleResponse(cb));
-        }
+              if (ttl) {
+                  redisCache.setex(key, ttl, val, handleResponse(cb));
+              } else {
+                  redisCache.set(key, val, handleResponse(cb));
+              }
+          });
       })
     },
     mset: function(...args) {
       const self = this;
 
       return new Promise((resolve, reject) => {
-        let cb;
-        let options = {};
+          return connect().then(() => {
+            let cb;
+            let options = {};
 
-        if (typeof args[args.length - 1] === 'function') {
-          cb = args.pop();
-        }
+            if (typeof args[args.length - 1] === 'function') {
+              cb = args.pop();
+            }
 
-        if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
-          options = args.pop();
-        }
+            if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
+              options = args.pop();
+            }
 
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+            if (!cb) {
+              cb = (err, result) => (err ? reject(err) : resolve(result));
+            }
 
-        const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
+            const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
 
-        let multi;
-        if (ttl) {
-          multi = redisCache.multi();
-        }
+            let multi;
+            if (ttl) {
+              multi = redisCache.multi();
+            }
 
-        let key;
-        let value;
-        const parsed = [];
-        for (let i = 0; i < args.length; i += 2) {
-          key = args[i];
-          value = args[i + 1];
+            let key;
+            let value;
+            const parsed = [];
+            for (let i = 0; i < args.length; i += 2) {
+              key = args[i];
+              value = args[i + 1];
 
-          /**
-           * Make sure the value is cacheable
-           */
-          if (!self.isCacheableValue(value)) {
-            return cb(new Error(`"${value}" is not a cacheable value`));
-          }
+              /**
+               * Make sure the value is cacheable
+               */
+              if (!self.isCacheableValue(value)) {
+                return cb(new Error(`"${value}" is not a cacheable value`));
+              }
 
-          value = JSON.stringify(value) || '"undefined"';
-          parsed.push(...[key, value]);
+              value = JSON.stringify(value) || '"undefined"';
+              parsed.push(...[key, value]);
 
-          if (ttl) {
-            multi.setex(key, ttl, value);
-          }
-        }
+              if (ttl) {
+                multi.setex(key, ttl, value);
+              }
+            }
 
-        if (ttl) {
-          multi.exec(handleResponse(cb));
-        } else {
-          redisCache.mset.apply(redisCache, [...parsed, handleResponse(cb)]);
-        }
-      });
+            if (ttl) {
+                multi.exec(handleResponse(cb));
+            } else {
+              redisCache.mset.apply(redisCache, [...parsed, handleResponse(cb)]);
+            }
+          });
+      })
     },
     get: (key, options, cb) => (
       new Promise((resolve, reject) => {
-        if (typeof options === 'function') {
-          cb = options;
-        }
+          return connect().then(() => {
+              if (typeof options === 'function') {
+                  cb = options;
+              }
 
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+              if (!cb) {
+                  cb = (err, result) => (err ? reject(err) : resolve(result));
+              }
 
-        redisCache.get(key, handleResponse(cb, { parse: true }));
+              redisCache.get(key, handleResponse(cb, {parse: true}));
+          });
       })
     ),
     mget: (...args) => (
       new Promise((resolve, reject) => {
-        let cb;
-        let options = {};
+          return connect().then(() => {
+              let cb;
+              let options = {};
 
-        if (typeof args[args.length - 1] === 'function') {
-          cb = args.pop();
-        }
+              if (typeof args[args.length - 1] === 'function') {
+                  cb = args.pop();
+              }
 
-        if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
-          options = args.pop();
-        }
+              if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
+                  options = args.pop();
+              }
 
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+              if (!cb) {
+                  cb = (err, result) => (err ? reject(err) : resolve(result));
+              }
 
-        redisCache.mget.apply(redisCache, [...args, handleResponse(cb, { parse: true })]);
+              redisCache.mget.apply(redisCache, [...args, handleResponse(cb, {parse: true})]);
+          });
       })
     ),
     del: (...args) => (
       new Promise((resolve, reject) => {
-        let cb;
-        let options = {};
+          return connect().then(() => {
+              let cb;
+              let options = {};
 
-        if (typeof args[args.length - 1] === 'function') {
-          cb = args.pop();
-        }
+              if (typeof args[args.length - 1] === 'function') {
+                  cb = args.pop();
+              }
 
-        if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
-          options = args.pop();
-        }
+              if (args[args.length - 1] instanceof Object && args[args.length - 1].constructor === Object) {
+                  options = args.pop();
+              }
 
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+              if (!cb) {
+                  cb = (err, result) => (err ? reject(err) : resolve(result));
+              }
 
-        redisCache.del.apply(redisCache, [...args, handleResponse(cb)]);
+              redisCache.del.apply(redisCache, [...args, handleResponse(cb)]);
+          });
       })
     ),
     reset: cb => (
       new Promise((resolve, reject) => {
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
-  
-        redisCache.flushdb(handleResponse(cb));
+          return connect().then(() => {
+              if (!cb) {
+                  cb = (err, result) => (err ? reject(err) : resolve(result));
+              }
+
+              //redisCache.flushDb().then(handleResponse(cb));
+              redisCache.flushdb(handleResponse(cb));
+          });
       })
     ),
     keys: (pattern = '*', cb) => (
       new Promise((resolve, reject) => {
-        if (typeof pattern === 'function') {
-          cb = pattern;
-          pattern = '*';
-        }
+          return connect().then(() => {
+              if (typeof pattern === 'function') {
+                  cb = pattern;
+                  pattern = '*';
+              }
 
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+              if (!cb) {
+                  cb = (err, result) => (err ? reject(err) : resolve(result));
+              }
 
-        redisCache.keys(pattern, handleResponse(cb));
+              redisCache.keys(pattern, handleResponse(cb));
+          });
       })
     ),
     ttl: (key, cb) => (
       new Promise((resolve, reject) => {
-        if (!cb) {
-          cb = (err, result) => (err ? reject(err) : resolve(result));
-        }
+          return connect().then(() => {
+              if (!cb) {
+                  cb = (err, result) => (err ? reject(err) : resolve(result));
+              }
 
-        redisCache.ttl(key, handleResponse(cb));
+              redisCache.ttl(key, handleResponse(cb));
+          });
       })
     ),
-    isCacheableValue: storeArgs.is_cacheable_value || (value => value !== undefined && value !== null),
+    isCacheableValue: storeArgs.isCacheableValue || (value => value !== undefined && value !== null),
   };
 };
 

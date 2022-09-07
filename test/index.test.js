@@ -1,5 +1,5 @@
 import cacheManager from 'cache-manager';
-import redisStore from '../index';
+import redisStore, {generateConnectUrl} from '../index';
 
 let redisCache;
 let customRedisCache;
@@ -9,25 +9,19 @@ const config = {
   port: 6379,
   auth_pass: undefined,
   db: 0,
-  ttl: 5,
+  ttl: 5
 };
 
 beforeEach((done) => {
   redisCache = cacheManager.caching({
     store: redisStore,
-    host: config.host,
-    port: config.port,
-    auth_pass: config.auth_pass,
-    db: config.db,
+    url: generateConnectUrl(config),
     ttl: config.ttl,
   });
 
   customRedisCache = cacheManager.caching({
     store: redisStore,
-    host: config.host,
-    port: config.port,
-    auth_pass: config.auth_pass,
-    db: config.db,
+    url: generateConnectUrl(config),
     ttl: config.ttl,
     isCacheableValue: (val) => {
       if (val === undefined) { // allow undefined
@@ -39,17 +33,14 @@ beforeEach((done) => {
     }
   });
 
-  redisCache.store.getClient().once('ready', () => redisCache.reset(done));
+  redisCache.reset(done)
 });
 
 describe('initialization', () => {
   it('should create a store with password instead of auth_pass (auth_pass is deprecated for redis > 2.5)', (done) => {
     const redisPwdCache = cacheManager.caching({
       store: redisStore,
-      host: config.host,
-      port: config.port,
-      password: config.auth_pass,
-      db: config.db,
+      url: generateConnectUrl(config),
       ttl: config.ttl
     });
 
@@ -174,11 +165,12 @@ describe('set', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.set('foo', 'bar', (err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      redisCache.set('foo', 'bar', (err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -282,11 +274,13 @@ describe('mset', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.mset('foo', 'bar', (err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      // TODO there seems to be an issue with using multi here
+      redisCache.mset('foo', 'bar', (err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -347,11 +341,12 @@ describe('get', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.get('foo', (err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      redisCache.get('foo', (err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -414,11 +409,12 @@ describe('mget', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.mget('foo', (err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      redisCache.mget('foo', (err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -474,11 +470,12 @@ describe('del', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.del('foo', (err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      redisCache.del('foo', (err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -501,11 +498,12 @@ describe('reset', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.reset((err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      redisCache.reset((err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -534,11 +532,12 @@ describe('ttl', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.ttl('foo', (err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      redisCache.ttl('foo', (err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -600,11 +599,12 @@ describe('keys', () => {
   });
 
   it('should return an error if there is an error acquiring a connection', (done) => {
-    redisCache.store.getClient().end(true);
-    redisCache.keys('foo', (err) => {
-      expect(err).not.toEqual(null);
-      done();
-    });
+    redisCache.store.getClient().v4.quit().then(() => {
+      redisCache.keys('foo', (err) => {
+        expect(err).not.toEqual(null);
+        done();
+      });
+    })
   });
 });
 
@@ -668,11 +668,13 @@ describe('defaults are set by redis itself', () => {
   });
 
   it('should default the host to `127.0.0.1`', () => {
-    expect(redisCache2.store.getClient().connection_options.host).toEqual('127.0.0.1');
+    // TODO doesn't seem like the client sets any defaults -- maybe relies on system defaults?
+    expect(redisCache2.store.getClient().options.socket.host).toEqual('127.0.0.1');
   });
 
   it('should default the port to 6379', () => {
-    expect(redisCache2.store.getClient().connection_options.port).toEqual(6379);
+    // TODO doesn't seem like the client sets any defaults -- maybe relies on system defaults?
+    expect(redisCache2.store.getClient().options.socket.port).toEqual(6379);
   });
 });
 
