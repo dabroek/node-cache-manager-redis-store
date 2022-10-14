@@ -7,9 +7,6 @@
       }
     ]
   ],
-  "plugins": [
-    "@babel/plugin-external-helpers"
-  ],
   "env": {
     "test": {
       "presets": [
