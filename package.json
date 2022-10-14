@@ -26,10 +26,10 @@
     "@babel/preset-env": "^7.19.4",
     "@babel/runtime": "^7.19.4",
     "@rollup/plugin-babel": "^6.0.0",
-    "@types/cache-manager": "^3.4.0",
+    "@types/cache-manager": "^4.0.2",
     "@types/redis": "^2.8.28",
     "babel-jest": "^29.2.0",
-    "cache-manager": "^2.9.0",
+    "cache-manager": "^4.1.0",
     "jest": "^29.2.0",
     "rollup": "^2.79.1"
   },
