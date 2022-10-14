@@ -1,20 +1,15 @@
 import { createClient } from 'redis';
 import {URL} from 'url';
 
-export const generateConnectUrl = (config = {}) => {
-    const redisUrl = new URL(`redis://${config.host}`);
-    redisUrl.port = `${config.port ?? 6379}`;
-    if(config.username !== undefined) {
-        redisUrl.username = config.username;
-    }
-    if(config.password !== undefined) {
-        redisUrl.password = config.password;
-    }
-    if(config.db !== undefined) {
-        redisUrl.pathname = `/${config.db}`;
-    }
-
-    return redisUrl.href;
+export const generateConnectUrl = (config) => {
+    const connectionUrl = new URL('redis://example.com')
+    connectionUrl.host = config.host
+    connectionUrl.port = `${config.port ?? 6379}`
+    connectionUrl.username = config.username ?? ''
+    connectionUrl.password = config.password ?? ''
+    connectionUrl.pathname = config.db ?? ''
+    connectionUrl.protocol = 'redis:'
+    return connectionUrl.toString()
 }
 
 const redisStore = (args) => {
