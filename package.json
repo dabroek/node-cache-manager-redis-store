@@ -13,7 +13,7 @@
   "scripts": {
     "prepare": "npm prune",
     "test": "jest --forceExit",
-    "test-cov": "jest --forceExit --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "test-cov": "jest --forceExit --coverage",
     "build": "rollup -c"
   },
   "dependencies": {
@@ -30,7 +30,6 @@
     "@types/redis": "^2.8.28",
     "babel-jest": "^29.2.0",
     "cache-manager": "^2.9.0",
-    "coveralls": "^3.0.9",
     "jest": "^29.2.0",
     "rollup": "^2.79.1"
   },
