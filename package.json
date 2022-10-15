@@ -2,7 +2,7 @@
   "name": "cache-manager-redis-store",
   "author": "Matthijs Dabroek <dabroek@gmail.com>",
   "description": "Redis store for node-cache-manager",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,4 +1,3 @@
-[![dependencies status](https://david-dm.org/dabroek/node-cache-manager-redis-store/status.svg)](https://david-dm.org/dabroek/node-cache-manager-redis-store)
 [![npm version](https://badge.fury.io/js/cache-manager-redis-store.svg)](https://badge.fury.io/js/cache-manager-redis-store)
 [![GitHub issues](https://img.shields.io/github/issues/dabroek/node-cache-manager-redis-store.svg)](https://github.com/dabroek/node-cache-manager-redis-store/issues)
 
