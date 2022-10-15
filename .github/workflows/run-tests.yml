@@ -19,7 +19,9 @@ jobs:
         redis-version: [4, 5, 6]
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
@@ -30,6 +32,8 @@ jobs:
       with:
         redis-version: ${{ matrix.redis-version }}
 
-    - run: npm install
+    - name: Install dependencies
+      run: npm install
 
-    - run: npm run test
+    - name: Run the tests
+      run: npm run test
