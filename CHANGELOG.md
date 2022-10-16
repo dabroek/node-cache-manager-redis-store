@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.1 - 17 Oct, 2022
+
+Fixed bug where the `redisStore.del` would no longer accept an options object, which broke the multiCaching interface.
+
 ## v3.0.0 - 15 Oct, 2022
 
 Upgraded to redis@^4

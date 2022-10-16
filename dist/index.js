@@ -479,9 +479,9 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
                 _context.next = 7;
                 break;
               }
-              return _context.abrupt("return", redisCache.setEx(key, ttl, getValue(value)));
+              return _context.abrupt("return", redisCache.setEx(key, ttl, encodeValue(value)));
             case 7:
-              return _context.abrupt("return", redisCache.set(key, getValue(value)));
+              return _context.abrupt("return", redisCache.set(key, encodeValue(value)));
             case 8:
             case "end":
               return _context.stop();
@@ -510,7 +510,7 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
               }
               return _context2.abrupt("return", null);
             case 5:
-              return _context2.abrupt("return", options.parse !== false ? JSON.parse(val) : val);
+              return _context2.abrupt("return", options.parse !== false ? decodeValue(val) : val);
             case 6:
             case "end":
               return _context2.stop();
@@ -561,7 +561,7 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
                 if (!isCacheableValue(value)) {
                   throw new Error("\"".concat(value, "\" is not a cacheable value"));
                 }
-                return [key, getValue(value)];
+                return [key, encodeValue(value)];
               }).filter(function (key) {
                 return key !== null;
               });
@@ -619,7 +619,7 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
                   if (val === null) {
                     return null;
                   }
-                  return options.parse !== false ? JSON.parse(val) : val;
+                  return options.parse !== false ? decodeValue(val) : val;
                 });
               }));
             case 4:
@@ -825,8 +825,11 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
     }
   };
 };
-function getValue(value) {
+function encodeValue(value) {
   return JSON.stringify(value) || '"undefined"';
+}
+function decodeValue(val) {
+  return JSON.parse(val);
 }
 function isObject(object) {
   return _typeof(object) === 'object' && !Array.isArray(object) && object !== null;
