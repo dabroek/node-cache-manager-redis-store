@@ -19,9 +19,9 @@ const buildRedisStoreWithConfig = (redisCache, config) => {
     const ttl = (options?.ttl || options?.ttl === 0) ? options.ttl : config.ttl;
 
     if (ttl) {
-      return redisCache.setEx(key, ttl, getValue(value));
+      return redisCache.setEx(key, ttl, encodeValue(value));
     } else {
-      return redisCache.set(key, getValue(value));
+      return redisCache.set(key, encodeValue(value));
     }
   };
   const get = async (key, options) => {
@@ -30,17 +30,21 @@ const buildRedisStoreWithConfig = (redisCache, config) => {
     if (val === null) {
       return null;
     }
-    return options.parse !== false ? JSON.parse(val) : val;
+    return options.parse !== false ? decodeValue(val) : val;
   };
   const del = async (args) => {
-    return redisCache.del(args);
-  };
-  const mset = async (args) => {
-    let options;
+    let options = {};
     if (isObject(args.at(-1))) {
       options = args.pop();
     }
-    const ttl = (options?.ttl || options?.ttl === 0) ? options.ttl : config.ttl;
+    return redisCache.del(args);
+  };
+  const mset = async (args) => {
+    let options = {};
+    if (isObject(args.at(-1))) {
+      options = args.pop();
+    }
+    const ttl = (options.ttl || options.ttl === 0) ? options.ttl : config.ttl;
 
     // Zips even and odd array items into tuples
     const items = args
@@ -50,7 +54,7 @@ const buildRedisStoreWithConfig = (redisCache, config) => {
         if (!isCacheableValue(value)) {
           throw new Error(`"${value}" is not a cacheable value`);
         }
-        return [key, getValue(value)];
+        return [key, encodeValue(value)];
       })
       .filter((key) => key !== null);
 
@@ -78,11 +82,15 @@ const buildRedisStoreWithConfig = (redisCache, config) => {
             return null;
           }
 
-          return options.parse !== false ? JSON.parse(val) : val;
+          return options.parse !== false ? decodeValue(val) : val;
         }),
       );
   };
   const mdel = async (...args) => {
+    let options = {};
+    if (isObject(args.at(-1))) {
+      options = args.pop();
+    }
     if (Array.isArray(args)) {
       args = args.flat();
     }
@@ -184,8 +192,12 @@ const buildRedisStoreWithConfig = (redisCache, config) => {
   };
 };
 
-function getValue(value) {
+function encodeValue(value) {
   return JSON.stringify(value) || '"undefined"';
+}
+
+function decodeValue(val) {
+  return JSON.parse(val);
 }
 
 function isObject(object) {

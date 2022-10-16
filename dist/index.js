@@ -528,8 +528,11 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
+              if (isObject(args.at(-1))) {
+                args.pop();
+              }
               return _context3.abrupt("return", redisCache.del(args));
-            case 1:
+            case 3:
             case "end":
               return _context3.stop();
           }
@@ -542,16 +545,16 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
   }();
   var _mset = /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(args) {
-      var _options, _options2;
       var options, ttl, items, multi, _iterator, _step, kv, _kv, key, value;
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) {
           switch (_context4.prev = _context4.next) {
             case 0:
+              options = {};
               if (isObject(args.at(-1))) {
                 options = args.pop();
               }
-              ttl = (_options = options) !== null && _options !== void 0 && _options.ttl || ((_options2 = options) === null || _options2 === void 0 ? void 0 : _options2.ttl) === 0 ? options.ttl : config.ttl; // Zips even and odd array items into tuples
+              ttl = options.ttl || options.ttl === 0 ? options.ttl : config.ttl; // Zips even and odd array items into tuples
               items = args.map(function (key, index) {
                 if (index % 2 !== 0) return null;
                 var value = args[index + 1];
@@ -563,7 +566,7 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
                 return key !== null;
               });
               if (!ttl) {
-                _context4.next = 10;
+                _context4.next = 11;
                 break;
               }
               multi = redisCache.multi();
@@ -580,9 +583,9 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
                 _iterator.f();
               }
               return _context4.abrupt("return", multi.exec());
-            case 10:
-              return _context4.abrupt("return", redisCache.mSet(items));
             case 11:
+              return _context4.abrupt("return", redisCache.mSet(items));
+            case 12:
             case "end":
               return _context4.stop();
           }
@@ -643,11 +646,14 @@ var buildRedisStoreWithConfig = function buildRedisStoreWithConfig(redisCache, c
               for (_len2 = _args6.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
                 args[_key2] = _args6[_key2];
               }
+              if (isObject(args.at(-1))) {
+                args.pop();
+              }
               if (Array.isArray(args)) {
                 args = args.flat();
               }
               return _context6.abrupt("return", redisCache.del(args));
-            case 3:
+            case 5:
             case "end":
               return _context6.stop();
           }

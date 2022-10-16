@@ -17,7 +17,6 @@ const config = {
 beforeEach(async () => {
   redisCache = cacheManager.caching({
     store: await redisStore(config),
-    ...config,
   });
   await redisCache.reset();
 
@@ -35,7 +34,6 @@ beforeEach(async () => {
 
   customRedisCache = cacheManager.caching({
     store: await redisStore(customConfig),
-    ...customConfig,
   });
   await customRedisCache.reset();
 });
@@ -171,6 +169,13 @@ describe('del', () => {
     await redisCache.set('foo', 'bar');
     await expect(redisCache.get('foo')).resolves.toEqual('bar');
     await redisCache.del('foo');
+    await expect(redisCache.get('foo')).resolves.toEqual(null);
+  });
+
+  it('should delete a value for a given key if options provided', async () => {
+    await redisCache.set('foo', 'bar');
+    await expect(redisCache.get('foo')).resolves.toEqual('bar');
+    await redisCache.del('foo', {});
     await expect(redisCache.get('foo')).resolves.toEqual(null);
   });
 
@@ -328,10 +333,24 @@ describe('mdel', () => {
     await expect(redisCache.mget('foo', 'foo2')).resolves.toEqual([null, null]);
   });
 
+  it('should delete a unlimited number of keys if options provided', async () => {
+    await redisCache.mset('foo', 'bar', 'foo2', 'bar2');
+    await expect(redisCache.mget('foo', 'foo2')).resolves.toEqual(['bar', 'bar2']);
+    await redisCache.store.mdel('foo', 'foo2', {});
+    await expect(redisCache.mget('foo', 'foo2')).resolves.toEqual([null, null]);
+  });
+
   it('should delete an array of keys', async () => {
     await redisCache.mset('foo', 'bar', 'foo2', 'bar2');
     await expect(redisCache.mget('foo', 'foo2')).resolves.toEqual(['bar', 'bar2']);
     await redisCache.store.mdel(['foo', 'foo2']);
+    await expect(redisCache.mget('foo', 'foo2')).resolves.toEqual([null, null]);
+  });
+
+  it('should delete an array of keys if options provided', async () => {
+    await redisCache.mset('foo', 'bar', 'foo2', 'bar2');
+    await expect(redisCache.mget('foo', 'foo2')).resolves.toEqual(['bar', 'bar2']);
+    await redisCache.store.mdel(['foo', 'foo2'], {});
     await expect(redisCache.mget('foo', 'foo2')).resolves.toEqual([null, null]);
   });
 
