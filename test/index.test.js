@@ -388,7 +388,7 @@ describe('keys', () => {
         expect(res).toEqual(["OK", "OK"]);
         redisCache.keys('*', function (err, res) {
           expect(err).toBeNull();
-          expect(res).toEqual(['foo', 'baz']);
+          expect(res).toEqual(expect.arrayContaining(['foo', 'baz']));
           done();
         });
       })
@@ -403,6 +403,7 @@ describe('keys', () => {
   it('should return an array of all keys if called without a pattern', async () => {
     await redisCache.mset('foo', 'bar', 'foo2', 'bar2', 'foo3', 'bar3');
     await expect(redisCache.keys()).resolves.toHaveLength(3);
+    await expect(redisCache.keys()).resolves.toEqual(expect.arrayContaining(['foo', 'foo2', 'foo3']));
   });
 
   it('should return an error if there is an error acquiring a connection', async () => {
