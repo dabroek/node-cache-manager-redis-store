@@ -1,15 +1,16 @@
 [![npm version](https://badge.fury.io/js/cache-manager-redis-store.svg)](https://badge.fury.io/js/cache-manager-redis-store)
 [![GitHub issues](https://img.shields.io/github/issues/dabroek/node-cache-manager-redis-store.svg)](https://github.com/dabroek/node-cache-manager-redis-store/issues)
+[![codecov](https://codecov.io/github/dabroek/node-cache-manager-redis-store/branch/master/graph/badge.svg?token=QmCNGyCLlD)](https://codecov.io/github/dabroek/node-cache-manager-redis-store)
 
 Redis store for node cache manager
 ==================================
 
-Redis cache store for [node-cache-manager](https://github.com/BryanDonovan/node-cache-manager). 
+Redis cache store for [node-cache-manager](https://github.com/BryanDonovan/node-cache-manager).
 
 How is this package different from `node-cache-manager-redis`?
 ----------------------------------------------------------------------------------
 This is a **completely different version** than the earlier [node-cache-manager-redis](https://github.com/dial-once/node-cache-manager-redis). This package does not use `redis-pool` which is unnecessary and not actively maintained.
- 
+
 This package aims to provide **the most simple wrapper possible** by just passing the configuration to the underlying `node_redis` package.
 
 Installation
@@ -32,15 +33,20 @@ See examples below on how to implement the Redis cache store.
 
 ```js
 var cacheManager = require('cache-manager');
-var redisStore = require('cache-manager-redis-store');
+var redisStore = require('cache-manager-redis-store').redisStore;
 
-var redisCache = cacheManager.caching({
-  store: redisStore,
-  host: 'localhost', // default value
-  port: 6379, // default value
-  auth_pass: 'XXXXX',
+var config = {
+  socket: {
+    host: 'localhost', // default value
+    port: 6379, // default value
+  },
+  password: 'XXXXX',
   db: 0,
   ttl: 600
+};
+
+var redisCache = cacheManager.caching({
+  store: await redisStore(config),
 });
 
 // listen for redis connection error event
@@ -53,18 +59,23 @@ redisClient.on('error', (error) => {
 
 var ttl = 5;
 
-redisCache.set('foo', 'bar', { ttl: ttl }, (err) => {
-  if (err) {
-    throw err;
-  }
+await redisCache.set('foo', 'bar', { ttl: ttl });
 
-  redisCache.get('foo', (err, result) => {
-    console.log(result);
-    // >> 'bar'
-    redisCache.del('foo', (err) => {
-    });
-  });
+// You can use either a Promise...
+var result = await redisCache.get('foo');
+console.log(result);
+
+// ...or a callback
+redisCache.get('foo', (err, result) => {
+  if (err) {
+    // handle error here
+  }
+  console.log(result);
 });
+
+// >> 'bar'
+console.log(await redisCache.del('foo'));
+// >> 1
 
 function getUser(id, cb) {
   setTimeout(() => {
@@ -96,9 +107,9 @@ redisCache.wrap(key, (cb) => {
 
 ```js
 var cacheManager = require('cache-manager');
-var redisStore = require('cache-manager-redis-store');
+var redisStore = require('cache-manager-redis-store').redisStore;
 
-var redisCache = cacheManager.caching({ store: redisStore, db: 0, ttl: 600 });
+var redisCache = cacheManager.caching({ store: await redisStore({ ...config, db: 0, ttl: 600 }) });
 var memoryCache = cacheManager.caching({ store: 'memory', max: 100, ttl: 60 });
 
 var multiCache = cacheManager.multiCaching([memoryCache, redisCache]);
@@ -107,19 +118,14 @@ var userId2 = 456;
 var key2 = `user_${userId2}`;
 
 // Set value in all caches
-multiCache.set('foo2', 'bar2', { ttl: ttl }, (err) => {
-  if (err) {
-    throw err;
-  }
+await multiCache.set('foo2', 'bar2', { ttl: ttl });
+// Fetches from highest priority cache that has the key
+var result = await multiCache.get('foo2');
+console.log(result);
+// >> 'bar2'
 
-  // Fetches from highest priority cache that has the key
-  multiCache.get('foo2', (err, result) => {
-    console.log(result);
-
-    // Delete from all caches
-    multiCache.del('foo2');
-  });
-});
+// Delete from all caches
+await multiCache.del('foo2');
 
 // Note: ttl is optional in wrap
 multiCache.wrap(key2, (cb) => {
