@@ -6,7 +6,7 @@ Upgraded to redis@^4
 
 ### Breaking Changes
 
-- All functions return Promises by default
+- The store needs to be instantiated before passing it to cache-manager and can no longer be instantiated with the factory method
 - Dropped support for Node.js < 16.18
 
 ## v2.0.0 - 13 Feb, 2020
