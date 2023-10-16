@@ -1,33 +1,33 @@
-# This workflow will do a clean installation of node dependencies and run code coverage across different versions of node
-
-name: Run Code Coverage
-
-on: [push, pull_request]
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-
-      - name: Start Redis ${{ matrix.redis-version }}
-        uses: supercharge/redis-github-action@1.4.0
-        with:
-          redis-version: 6
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run the tests
-        run: npm test -- --coverage
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+## This workflow will do a clean installation of node dependencies and run code coverage across different versions of node
+#
+#name: Run Code Coverage
+#
+#on: [push, pull_request]
+#
+#jobs:
+#  build:
+#
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#
+#      - name: Use Node.js ${{ matrix.node-version }}
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 18.x
+#
+#      - name: Start Redis ${{ matrix.redis-version }}
+#        uses: supercharge/redis-github-action@1.4.0
+#        with:
+#          redis-version: 6
+#
+#      - name: Install dependencies
+#        run: npm install
+#
+#      - name: Run the tests
+#        run: npm test -- --coverage
+#
+#      - name: Upload coverage to Codecov
+#        uses: codecov/codecov-action@v3

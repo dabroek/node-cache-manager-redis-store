@@ -1,5 +1,5 @@
 import cacheManager from 'cache-manager';
-import {redisStore} from '../index';
+import {redisStore} from '../src';
 
 let redisCache;
 let customRedisCache;
