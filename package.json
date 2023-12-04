@@ -2,7 +2,7 @@
   "name": "@myrror-security/cache-manager-redis-store",
   "author": "Myrror Security <contact@myrror.security>",
   "description": "Redis store for node-cache-manager",
-  "version": "1.1.1",
+  "version": "0.0.0-development",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

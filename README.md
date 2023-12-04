@@ -34,6 +34,8 @@ TODO:
 * [ ] Add examples
 * [ ] Add code coverage
 * [ ] Add more package managers
+* [ ] PR template
+* [ ] Issues template
 
 License
 -------
