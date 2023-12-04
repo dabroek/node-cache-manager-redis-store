@@ -32,7 +32,6 @@ The project is under active development.
 TODO:
 * [ ] Add documentation
 * [ ] Add examples
-* [ ] Add CI/CD
 * [ ] Add code coverage
 * [ ] Add more package managers
 
