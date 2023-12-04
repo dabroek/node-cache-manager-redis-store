@@ -39,5 +39,4 @@ TODO:
 
 License
 -------
-
 The `@myrror-security/cache-manager-redis-store` is licensed under the MIT license.
