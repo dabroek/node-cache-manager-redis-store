@@ -24,7 +24,6 @@ npm install @myrror-security/cache-manager-redis-store --save
 
 Contribution
 ------------
-
 Want to help improve this package? We take [pull requests](https://github.com/blindspot-security/node-cache-manager-redis-store/pulls).
 
 ## Status
