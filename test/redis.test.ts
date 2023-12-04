@@ -1,82 +1,97 @@
 import {redisStore} from '../src';
 import {RedisStore} from "../src/types";
-import {describe,beforeEach,it,expect} from "vitest";
+import {describe, beforeEach, it, expect} from "vitest";
 
 let redisClient: RedisStore
 const config = {
-    socket: {
-        host: process.env.REDIS_HOST || '127.0.0.1',
-        port: 6379
-    },
-    password: 'redis_password',
-    db: 0,
-    ttl: 5000,
+  socket: {
+    host: process.env.REDIS_HOST || '127.0.0.1',
+    port: 6379
+  },
+  password: 'redis_password',
+  db: 0,
+  ttl: 1000 * 60,
 };
 beforeEach(async () => {
-    redisClient = await redisStore(config);
-    await redisClient.reset();
+  redisClient = await redisStore(config);
+  await redisClient.reset();
 });
 describe('Redis Store', () => {
 
-    it('should set and get a value', async () => {
-        const key = 'testKey';
-        const value = 'testValue';
+  it('should set and get a value', async () => {
+    const key = 'testKey';
+    const value = 'testValue';
 
-        await redisClient.set(key, value);
-        const retrievedValue = await redisClient.get(key);
+    await redisClient.set(key, value);
+    const retrievedValue = await redisClient.get(key);
 
-        expect(retrievedValue).toEqual(value);
-    });
+    expect(retrievedValue).toEqual(value);
+  });
 
-    it('should delete a key', async () => {
-        const key = 'testKey';
-        const value = 'testValue';
+  it('should delete a key', async () => {
+    const key = 'testKey';
+    const value = 'testValue';
 
-        await redisClient.set(key, value);
-        await redisClient.del(key);
+    await redisClient.set(key, value);
+    await redisClient.del(key);
 
-        const retrievedValue = await redisClient.get(key);
-        expect(retrievedValue).toBeUndefined();
-    });
+    const retrievedValue = await redisClient.get(key);
+    expect(retrievedValue).toBeUndefined();
+  });
 
-    it('should set multiple values and get them', async () => {
-        const keyValuePairs: [string, string][] = [['key12', 'value1'], ['key22', 'value2']];
-        const ttl = 10000;
+  it('should set multiple values and get them', async () => {
+    const keyValuePairs: [string, string][] = [['key12', 'value1'], ['key22', 'value2']];
+    const ttl = 10000;
 
-        await redisClient.mset(keyValuePairs, ttl);
+    await redisClient.mset(keyValuePairs, ttl);
 
-        const retrievedValues = await redisClient.mget('key12', 'key22');
-        expect(retrievedValues).toEqual(['value1', 'value2']);
-    });
+    const retrievedValues = await redisClient.mget('key12', 'key22');
+    expect(retrievedValues).toEqual(['value1', 'value2']);
+  });
 
-    it('should handle non-cacheable values', async () => {
-        const key = 'nonCacheableKey';
-        const nonCacheableValue = undefined;
+  it('should handle non-cacheable values', async () => {
+    const key = 'nonCacheableKey';
+    const nonCacheableValue = undefined;
 
-        await expect(redisClient.set(key, nonCacheableValue)).rejects.toThrow(
-            `"${nonCacheableValue}" is not a cacheable value`
-        );
-    });
+    await expect(redisClient.set(key, nonCacheableValue)).rejects.toThrow(
+      `"${nonCacheableValue}" is not a cacheable value`
+    );
+  });
 
-    it('should handle TTL for individual keys in mset', async () => {
-        const key = 'ttlKey';
-        const value = 'ttlValue';
-        const ttl = 10000;
+  it('should handle TTL for individual keys in mset', async () => {
+    const key = 'ttlKey';
+    const value = 'ttlValue';
+    const ttl = 10000;
 
-        await redisClient.mset([[key, value]], ttl);
+    await redisClient.mset([[key, value]], ttl);
 
-        const retrievedTtl = await redisClient.ttl(key);
-        expect(retrievedTtl).toBeLessThanOrEqual(ttl / 1000); // Redis returns TTL in seconds
-    });
+    const retrievedTtl = await redisClient.ttl(key);
+    expect(retrievedTtl).toBeLessThanOrEqual(ttl / 1000); // Redis returns TTL in seconds
+  });
 
-    it('should handle TTL for individual keys in set', async () => {
-        const key = 'ttlKeySet';
-        const value = 'ttlValueSet';
-        const ttl = 1000;
+  it('should handle TTL for individual keys in set', async () => {
+    const key = 'ttlKeySet';
+    const value = 'ttlValueSet';
+    const ttl = 1000;
 
-        await redisClient.set(key, value, ttl);
+    await redisClient.set(key, value, ttl);
 
-        const retrievedTtl = await redisClient.ttl(key);
-        expect(retrievedTtl).toBeLessThanOrEqual(ttl / 1000); // Redis returns TTL in seconds
-    });
+    const retrievedTtl = await redisClient.ttl(key);
+    expect(retrievedTtl).toBeLessThanOrEqual(ttl / 1000); // Redis returns TTL in seconds
+  });
+
+  it(`should return scan result by pattern`, async () => {
+    const key1 = 'ttl:a:b';
+    const key2 = 'ttl1:a:b';
+    const key3 = 'ttl:a:b1';
+    const value = 'scanValueSet';
+    const ttl = 10000;
+
+    await redisClient.set(key1, value, ttl);
+    await redisClient.set(key2, value, ttl);
+    await redisClient.set(key3, value, ttl);
+
+    const res = await redisClient.scan('ttl:a:*');
+    expect(res.keys).toEqual([key1, key3]);
+  });
 });

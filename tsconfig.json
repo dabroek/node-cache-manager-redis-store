@@ -10,5 +10,6 @@
     "declaration": true,
     "incremental": true
   },
+  "include": ["src/**/*"],
   "exclude": ["dist"]
 }

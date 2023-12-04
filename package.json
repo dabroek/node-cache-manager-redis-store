@@ -2,7 +2,7 @@
   "name": "@myrror-security/cache-manager-redis-store",
   "author": "Myrror Security <contact@myrror.security>",
   "description": "Redis store for node-cache-manager",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,8 @@
     "prepare": "npm prune",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json"
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "redis": "^4.6.10",
@@ -24,7 +25,8 @@
     "@types/node": "^20.9.1",
     "vitest": "^0.34.6",
     "@vitest/coverage-v8": "^0.34.6",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "semantic-release": "^22.0.8"
   },
   "engines": {
     "node": ">= 16.18.0"

@@ -1,4 +1,4 @@
-# Redis store for node cache manager (Ts)
+# Redis store for node cache manager (TypeScript)
 [![npm version](https://badge.fury.io/js/@myrror-security%2Fcache-manager-redis-store.svg)](https://badge.fury.io/js/cache-manager-redis-store)
 ![GitHub issues](https://img.shields.io/github/issues/blindspot-security/node-cache-manager-redis-store)
 
@@ -34,7 +34,6 @@ TODO:
 * [ ] Add examples
 * [ ] Add CI/CD
 * [ ] Add code coverage
-* [ ] Fix badges
 * [ ] Add more package managers
 
 License

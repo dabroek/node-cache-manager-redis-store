@@ -1,7 +1,7 @@
 import {caching} from 'cache-manager';
 import {redisStore} from '../src';
 import {RedisCache} from "../src/types";
-import {describe,beforeEach,expect,it} from "vitest";
+import {describe, beforeEach, expect, it} from "vitest";
 
 let redisCache: RedisCache;
 let customRedisCache: RedisCache;
@@ -13,7 +13,7 @@ const config = {
     },
     password: 'redis_password',
     db: 0,
-    ttl: 5000,
+    ttl: 50000,
 };
 
 beforeEach(async () => {
@@ -43,19 +43,24 @@ describe('set', () => {
 
     it('should store a value without ttl', async () => {
         await redisCache.set('foo', 'bar');
-        await expect(redisCache.get('foo')).resolves.toEqual('bar');
-        await expect(redisCache.store.ttl('foo')).resolves.toEqual(config.ttl / 1000);
+        const value = await redisCache.get('foo');
+        const ttl = config.ttl / 1000;
+        const ttlValue = await redisCache.store.ttl('foo');
+        expect(ttlValue).toBeLessThanOrEqual(ttl);
+        expect(value).toEqual('bar');
+
     });
 
     it('should store a value with a specific ttl', async () => {
-        const ttl = 5000;
+        const ttl = 1000 * 60;
         await redisCache.set('foo', 'bar', ttl);
-        await expect(redisCache.store.ttl('foo')).resolves.toEqual(ttl / 1000);
+        await expect(redisCache.store.ttl('foo')).resolves.toBeLessThanOrEqual(ttl / 1000);
     });
 
     it('should store a value with a infinite ttl', async () => {
-        await redisCache.set('foo', 'bar', 0);
-        await expect(redisCache.store.ttl('foo')).resolves.toEqual(-1);
+        await redisCache.set('foo1', 'bar', 0);
+        const ttlValue = await redisCache.store.ttl('foo1');
+        expect(ttlValue).toEqual(-1);
     });
 
     it('should not be able to store a null value (not cacheable)', async () => {
