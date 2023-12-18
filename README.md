@@ -18,8 +18,17 @@ At version v5.x.x node-cache-manager has been rewritten in Typescript. and did m
 
 Installation
 ------------
-```sh
+### NPM
+```shell
 npm install @myrror-security/cache-manager-redis-store --save
+```
+### YARN
+```shell
+yarn add @myrror-security/cache-manager-redis-store
+```
+### PNPM
+```shell
+pnpm install  @myrror-security/cache-manager-redis-store
 ```
 
 Contribution
@@ -32,7 +41,6 @@ TODO:
 * [ ] Add documentation
 * [ ] Add examples
 * [ ] Add code coverage
-* [ ] Add more package managers
 * [ ] PR template
 * [ ] Issues template
 

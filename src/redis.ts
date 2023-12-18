@@ -6,6 +6,7 @@ import {
   RedisModules, RedisScripts
 } from 'redis';
 import {Milliseconds, RedisStore, TConfig, TMset} from './types';
+import {ScanReply} from '@redis/client/dist/lib/commands/SCAN';
 
 export const redisStore = async (config?: TConfig): Promise<RedisStore> => {
   const redisCache: RedisClientType<RedisDefaultModules & RedisModules, RedisFunctions, RedisScripts> = createClient(config);
@@ -105,7 +106,7 @@ class buildRedisStoreWithConfig implements RedisStore {
     return await this.redisCache.ttl(key);
   };
 
-  public async scan(pattern: string): Promise<{ keys: string[], cursor: number }> {
+  public async scan(pattern: string): Promise<ScanReply> {
     let cursor = 0;
     return await this.redisCache.scan(cursor, {MATCH: pattern});
   }
