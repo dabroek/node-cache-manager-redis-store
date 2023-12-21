@@ -7,5 +7,5 @@ export interface RedisStore extends Store {
 
   getClient(): RedisClientType<RedisDefaultModules & RedisModules, RedisFunctions, RedisScripts>;
 
-  scan(pattern: string): Promise<ScanReply>;
+  scan(pattern: string, cursor? :number, count?: number): Promise<ScanReply>;
 }
