@@ -105,6 +105,5 @@ describe('Redis Store', () => {
     const thirdScanWithCount = await redisClient.scan('ttl:a:*', secondScanWithCount.cursor, 1);
     expect(thirdScanWithCount.keys).toEqual([]);
     expect(thirdScanWithCount.cursor).equal(0);
-
   });
 });
