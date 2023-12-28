@@ -8,4 +8,9 @@ export interface RedisStore extends Store {
   getClient(): RedisClientType<RedisDefaultModules & RedisModules, RedisFunctions, RedisScripts>;
 
   scan(pattern: string, cursor? :number, count?: number): Promise<ScanReply>;
+
+  atomicGetAndSet(key: string, updateFunction: (val: any) =>  any): Promise<void>;
+
+  flushAll(): Promise<void>
+
 }

@@ -3,7 +3,7 @@ import {
   RedisClientType,
   RedisDefaultModules,
   RedisFunctions,
-  RedisModules, RedisScripts
+  RedisModules, RedisScripts, WatchError
 } from 'redis';
 import {Milliseconds, RedisStore, TConfig, TMset} from './types';
 import {ScanReply} from '@redis/client/dist/lib/commands/SCAN';
@@ -108,6 +108,16 @@ class buildRedisStoreWithConfig implements RedisStore {
 
   public async scan(pattern: string, cursor: number = 0, count: number = 10): Promise<ScanReply> {
     return await this.redisCache.scan(cursor, { MATCH: pattern, COUNT: count });
+  }
+
+  public async atomicGetAndSet(key: string, func: (val: any) => any): Promise<any> {
+    await this.redisCache.watch(key);
+    const val = await this.redisCache.get(key);
+    return await this.redisCache.multi().set(key, func(val)).exec();
+  }
+
+  public async flushAll() {
+    await this.redisCache.flushAll();
   }
 
   public getClient(): RedisClientType<RedisDefaultModules & RedisModules, RedisFunctions, RedisScripts> {
